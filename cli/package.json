@@ -3,13 +3,11 @@
   "version": "0.1.5",
   "description": "",
   "main": "cli.js",
-  "type": "module",
   "repository": "https://github.com/adam-dorin/rootsby-cli",
   "homepage": "https://github.com/adam-dorin/rootsby-cli",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "quick:pub": "npm version patch && npm publish",
-    "build": "tsc"
+    "quick:pub": "npm version patch && npm publish"
   },
   "bin": {
     "rootsby": "./cli.js",
@@ -35,10 +33,5 @@
     "commander": "^10.0.0",
     "conf": "^11.0.1",
     "openai": "^3.2.1"
-  },
-  "devDependencies": {
-    "@types/node": "^17.0.12",
-    "eslint-config-custom": "workspace:*",
-    "tsconfig": "workspace:*"
   }
 }

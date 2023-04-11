@@ -1,8 +1,6 @@
 #! /usr/bin/env node
 
-import { Conf } from "conf";
-
-const captureStdin = (q: string):Promise<string> => {
+const captureStdin = (q) => {
   return new Promise((resolve, reject) => {
     const readline = require("readline");
     const rl = readline.createInterface({
@@ -15,7 +13,7 @@ const captureStdin = (q: string):Promise<string> => {
         if (answer === "-e") {
           process.exit(1);
         }
-        resolve(answer as string);
+        resolve(answer);
         rl.close();
       });
     }
@@ -27,7 +25,7 @@ const captureStdin = (q: string):Promise<string> => {
 (async function () {
   const { program } = require("commander");
   const pkg = require("./package.json");
-//   const Conf = await import("conf");
+  const Conf = await import("conf");
   const config = new Conf.default({ projectName: "rootsby-cli" });
 
   program.version(pkg.version);
@@ -142,12 +140,12 @@ const captureStdin = (q: string):Promise<string> => {
           prompt_list.map((promptName, index) => {
             console.log(`${index + 1}. ${promptName}`);
           });
-          let promptIndex: string | number = await captureStdin(
+          let promptIndex = await captureStdin(
             "Which prompt do you want to execute? (number)"
           );
-          promptIndex = parseInt(promptIndex as string);
+          promptIndex = parseInt(promptIndex);
           if (
-            !Number.isNaN(promptIndex) &&
+            promptIndex !== NaN &&
             promptIndex > 0 &&
             promptIndex <= prompt_list.length
           ) {
@@ -170,13 +168,16 @@ const captureStdin = (q: string):Promise<string> => {
     .argument("[key]", "The config key, to be accessed", "")
     .argument("[value]", "The config value, to be set", "")
     .description("Access the configuration")
-    .option("-s, --set", "Paired key value to set in the config")
+    .option(
+      "-s, --set",
+      "Paired key value to set in the config"
+    )
     .option("-d, --delete", "Key to delete from the config")
     .option("--full", "Output the full config")
     .action(function (key, value, options) {
-      console.log("Options: " + JSON.stringify(options));
-      console.log("Key: " + JSON.stringify(key));
-      console.log("Value: " + JSON.stringify(value));
+        console.log("Options: " + JSON.stringify(options));
+        console.log("Key: " + JSON.stringify(key));
+        console.log("Value: " + JSON.stringify(value));
       if (!config.has("config_keys")) {
         config.set("config_keys", {});
       }
@@ -211,8 +212,9 @@ const captureStdin = (q: string):Promise<string> => {
     config.set("prompt_list", []);
   }
 
+
   program.name("ry");
-  //   program.name("rootsby");
+//   program.name("rootsby");
 
   program.parse();
 })();
