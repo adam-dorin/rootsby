@@ -1,4 +1,4 @@
-export const execute = (): string => {
+export default function(): string {
     const a = ;
     return 'THIS_IS_THE_RESULT';
 }
