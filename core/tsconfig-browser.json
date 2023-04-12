@@ -1,0 +1,15 @@
+{
+  // This is an alias to @tsconfig/node12: https://github.com/tsconfig/bases
+  "extends": "ts-node/node14/tsconfig.json",
+
+  "compilerOptions": {
+    "module": "UMD",
+
+    // typescript options here
+    "rootDirs": ["./src","./tests"],
+    "outDir": "./dist_browser",
+    "declaration": true
+  },
+  "include": ["src/browser/**/*","src/utils/status.enum.ts"],
+  "exclude": ["node_modules", "examples", "tests"]
+}

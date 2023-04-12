@@ -1,0 +1,25 @@
+{
+  "workflow": {
+    "Id": "6309ec91-74f0-4813-aced-fdf267a73466",
+    "Description": "This is the simple Task-API workflow",
+    "IsActive": true,
+    "IsPublic": true,
+    "WorkFlowStatus": "3",
+    "WorkFlowStartElementId": "2c332244-c922-4ca4-a101-d11b40b1c039"
+  },
+  "elements": [
+    {
+      "Id": "2c332244-c922-4ca4-a101-d11b40b1c039",
+      "Name": "name-100",
+      "Description": "Description 100",
+      "State": {
+        "Type": "ApiCall",
+        "Data": "{\"url\":\"https://catfact.ninja/fact\",\"method\":\"GET\"}"
+      },
+      "WorkFlowId": "6309ec91-74f0-4813-aced-fdf267a73466",
+      "ElementType": "Task",
+      "StatusId": "1",
+      "NextElementId": null
+    }
+  ]
+}

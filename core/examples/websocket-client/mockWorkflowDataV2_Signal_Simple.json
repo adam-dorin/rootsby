@@ -1,0 +1,51 @@
+{
+  "workflow": {
+    "Id": "d13a76c1-5d68-4ae4-a07c-86986d933a73",
+    "Description": "This is the simple Signal workflow",
+    "IsActive": true,
+    "IsPublic": true,
+    "WorkFlowStatus": "3",
+    "WorkFlowStartElementId": "c2ae708f-69e0-4f1a-a2ae-eed705a610f4"
+  },
+  "elements": [
+    {
+      "Id": "c2ae708f-69e0-4f1a-a2ae-eed705a610f4",
+      "Name": "name-100",
+      "Description": "Description 100",
+      "State": {
+        "Type": "ScriptExecution",
+        "Data": "\"C:\\\\Users\\\\adamo\\\\projects\\\\rootsby\\\\tests\\\\task_scripts\\\\task_script\""
+      },
+      "WorkFlowId": "d13a76c1-5d68-4ae4-a07c-86986d933a73",
+      "ElementType": "Task",
+      "StatusId": "1",
+      "NextElementId": "8af3e682-3171-47c5-988a-827ee3f55c18"
+    },
+    {
+      "Id": "8af3e682-3171-47c5-988a-827ee3f55c18",
+      "Name": "name-101",
+      "Description": "Description 101",
+      "WorkFlowId": "d13a76c1-5d68-4ae4-a07c-86986d933a73",
+      "ElementType": "Signal",
+      "StatusId": "1",
+      "NextElementId": "1fd44b71-5aa6-40a5-a4b4-90695ed930e9",
+      "State": {
+        "Type": "CommandSignal",
+        "Data": "THIS_IS_THE_SIGNAL"
+      }
+    },
+    {
+      "Id": "1fd44b71-5aa6-40a5-a4b4-90695ed930e9",
+      "Name": "name-100",
+      "Description": "Description 100",
+      "State": {
+        "Type": "ScriptExecution",
+        "Data": "\"C:\\\\Users\\\\adamo\\\\projects\\\\rootsby\\\\tests\\\\task_scripts\\\\task_script\""
+      },
+      "WorkFlowId": "d13a76c1-5d68-4ae4-a07c-86986d933a73",
+      "ElementType": "Task",
+      "StatusId": "1",
+      "NextElementId": null
+    }
+  ]
+}
