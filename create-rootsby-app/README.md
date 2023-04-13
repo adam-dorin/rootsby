@@ -9,12 +9,12 @@
     - [x] Create and Update 
     - [x] Delete
     - [x] Execution
-* [ ] Scripts
-    - [ ] Get List
+* [x] Scripts
+    - [x] Get List
     - [ ] Get single
-    - [ ] Create and Update 
-    - [ ] Delete
-    - [ ] Execution
+    - [x] Create and Update 
+    - [x] Delete
+    - [x] Execution
 * [ ] Workflows ( workflow runner integration)
     - [ ] Get List
     - [ ] Get single
