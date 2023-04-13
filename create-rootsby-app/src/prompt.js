@@ -2,24 +2,10 @@
 const fs = require("fs");
 const path = require("path");
 const uuid = require("uuid");
+const {getInMemoryStore} = require("./data-store");
 let defaultExecutor;
 
-const getInMemoryPromptStore = () => {
-  const promptStore = fs.readFileSync(
-    path.join(__dirname, "../content/prompts/store.json")
-  );
-  try {
-    return JSON.parse(promptStore);
-  } catch (e) {
-    console.log("Error parsing prompts store");
-    console.log(e);
-    return {
-      prompts: {},
-      threads: {},
-    };
-  }
-};
-const inMemoryPromptStore = getInMemoryPromptStore();
+const inMemoryPromptStore = getInMemoryStore([__dirname, "../content/prompts/store.json"],{prompts:{}, threads:{} });
 
 // app.get('/prompt/list', async (req, res)=> {
 const getPromptList = async (req, res) => {

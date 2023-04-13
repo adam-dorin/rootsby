@@ -18,8 +18,8 @@ function router(app) {
   app.get("/script/list", scriptsController.getScriptList);
   app.get("/script/:name", scriptsController.getScript);
   app.post("/script", scriptsController.createOrUpdateScript);
-  app.delete("/script", scriptsController.deleteScript);
-  app.get("/script/:name/execute", scriptsController.callScript);
+  app.delete("/script/:name", scriptsController.deleteScript);
+  app.post("/script/:name/execute", scriptsController.callScript);
 
   // Workflows
   app.get("/workflow/list", workflowController.getWorkflowList);
