@@ -3,7 +3,8 @@ import {FlowBaseElement} from './base.element';
 import {EventTypes} from './utils/status.enum';
 import {Observable} from './utils/event.observer';
 import axios, {AxiosRequestConfig} from "axios";
-import {ScriptModule, ScriptResponse} from "./types/action.type";
+import {ScriptResponse} from "./types/action.type";
+
 
 export class Task extends FlowBaseElement {
 
@@ -29,7 +30,13 @@ export class Task extends FlowBaseElement {
 
     // TODO: type this
     private static async scriptExecutor(path: string, config: any): Promise<ScriptResponse> {
-        return {Output: (await import(path) as ScriptModule).execute()} as ScriptResponse
+        return new Promise( (resolve, reject) => {
+            import(path).then(script => {
+                resolve({ Output: script.default?script.default():script() } as ScriptResponse);
+            }).catch(error => {
+                reject(error);
+            })
+        })
     }
 
     progress(): void {
