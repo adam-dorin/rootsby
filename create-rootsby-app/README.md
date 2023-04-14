@@ -20,6 +20,6 @@
     - [ ] Get single
     - [ ] Create and Update 
     - [ ] Delete
-    - [ ] Execution
+    - [x] Execution
 * [ ] Write documentation
 * [ ] Switch over to typescript
