@@ -22,3 +22,4 @@
     - [ ] Delete
     - [ ] Execution
 * [ ] Write documentation
+* [ ] Switch over to typescript
