@@ -26,7 +26,7 @@ function router(app) {
   app.get("/workflow/:name", workflowController.getWorkflow);
   app.post("/workflow", workflowController.createOrUpdateWorkflow);
   app.delete("/workflow", workflowController.deleteWorkflow);
-  app.get("/workflow/:name/execute", workflowController.callWorkflow);
+  app.post("/workflow/:name/execute", workflowController.callWorkflow);
   
   return app;
 }
