@@ -1,8 +1,8 @@
 {
   "name": "rootsby",
   "description": "A simple, lightweight, and fast workflow engine for NodeJS.",
-  "version": "0.1.5",
-  "main": "server.js",
+  "version": "0.1.7",
+  "main": "workflow.js",
   "scripts": {
     "tsc": "tsc",
     "start": "ts-node src/server.websocket.ts",
