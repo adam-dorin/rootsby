@@ -9,37 +9,37 @@ import {EventName} from '../utils/status.enum';
 import {Operator, PrimitiveExpression} from "../utils/expression.parser";
 
 export interface DataFlowElementType {
-    Id: string;
-    Name: string;
-    Description: string;
+    id: string;
+    name: string;
+    description: string;
 }
 
 export interface DataFlowStatus {
-    Id: string;
-    Name: string;
+    id: string;
+    name: string;
 }
 
 export interface DataFlow {
-    Id: string;
-    Description: string;
-    IsActive: boolean;
-    IsPublic: boolean;
-    WorkFlowStatus: DataFlowStatus['Id'];
-    WorkFlowStartElementId: DataFlowElement['Id'];
+    id: string;
+    description: string;
+    isActive: boolean;
+    isPublic: boolean;
+    workFlowStatus: DataFlowStatus['id'];
+    workFlowStartElementId: DataFlowElement['id'];
 }
 
 export interface DataFlowBaseElement {
-    Id: string; // *
-    Name: string;
-    Description: string;
-    State: { Type: string, Data: string } | null;
-    ElementType: DataFlowElementType['Id'];
-    StatusId: DataFlowStatus['Id'];
-    NextElementId: DataFlowBaseElement['Id'] | null;
+    id: string; // *
+    name: string;
+    description: string;
+    state: { type: string, data: string } | null;
+    elementType: DataFlowElementType['id'];
+    statusId: DataFlowStatus['id'];
+    nextElementId: DataFlowBaseElement['id'] | null;
 }
 
 export interface DataFlowElement extends DataFlowBaseElement {
-    WorkFlowId: DataFlow['Id'];
+    workFlowId: DataFlow['id'];
 }
 
 export interface DataFlowConfiguration {
@@ -47,31 +47,31 @@ export interface DataFlowConfiguration {
     elements: DataFlowElement[];
 }
 export interface DataEvent {
-    Type: EventName,
-    Data: WorkflowEventData
+    type: EventName,
+    data: WorkflowEventData
 }
 
 export interface GateCondition {
-    Operator: Operator,
-    State: PrimitiveExpression,
-    ElementType: string,
-    NextElementId: string
+    operator: Operator,
+    state: PrimitiveExpression,
+    elementType: string,
+    nextElementId: string
 }
 
 export interface WorkflowEventData {
-    Id: string,
-    Output: string | null,
-    ElementType: string,
-    NextElementId: string | null
+    id: string,
+    output: string | null,
+    elementType: string,
+    nextElementId: string | null
 }
 
 export class WorkflowEvent implements DataEvent {
-    Type: EventName;
-    Data: WorkflowEventData
+    type: EventName;
+    data: WorkflowEventData
 
     constructor(type: EventName, data: WorkflowEventData) {
-        this.Type = type;
-        this.Data = data;
+        this.type = type;
+        this.data = data;
     }
 }
 

@@ -27,19 +27,19 @@ import {
 } from './utils/status.enum';
 
 type WorkflowElement = Task | Signal | Gate;
-type NextElementId = DataFlowElement['NextElementId'];
+type NextElementId = DataFlowElement['nextElementId'];
 
 export class WorkFlow {
 
-    public currentElementId: DataFlowElement['Id'];
-    private elements: { [id: DataFlowElement['Id']]: WorkflowElement } = {};
-    public Data: DataFlow;
+    public currentElementId: DataFlowElement['id'];
+    private elements: { [id: DataFlowElement['id']]: WorkflowElement } = {};
+    public data: DataFlow;
     private readonly events: Observable<DataEvent> = new Observable<DataEvent>();
 
     constructor(data: DataFlowConfiguration) {
 
-        this.Data = data.workflow;
-        this.currentElementId = this.Data.WorkFlowStartElementId;
+        this.data = data.workflow;
+        this.currentElementId = this.data.workFlowStartElementId;
         this.createElementsRecord(data.elements);
         this.checkConnections(data.elements);
     }
@@ -53,7 +53,7 @@ export class WorkFlow {
 
     private createElementsRecord(elements: DataFlowElement[]): void {
         elements.forEach(item => {
-            this.elements[item.Id] = this.createElement(item);
+            this.elements[item.id] = this.createElement(item);
         });
     }
 
@@ -62,23 +62,23 @@ export class WorkFlow {
     }
 
     private whenElementEnds(): void {
-        this.currentElement.events.subscribe(`Element:${EventTypes.Error}:${this.currentElement.Data.Id}`, () => {
+        this.currentElement.events.subscribe(`Element:${EventTypes.Error}:${this.currentElement.data.id}`, () => {
             // TODO: still need to add tests for this
-            this.currentElement.events.unsubscribeAll(`Element:${EventTypes.Error}:${this.currentElement.Data.Id}`);
+            this.currentElement.events.unsubscribeAll(`Element:${EventTypes.Error}:${this.currentElement.data.id}`);
             this.error();
             this.end();
         })
-        this.currentElement.events.subscribe(`Element:${this.currentElement.Data.Id}:${EventTypes.End}`, (event: DataEvent) => {
+        this.currentElement.events.subscribe(`Element:${this.currentElement.data.id}:${EventTypes.End}`, (event: DataEvent) => {
 
-            this.currentElement.events.unsubscribeAll(`Element:${this.currentElement.Data.Id}:${EventTypes.End}`);
-            let nextElementId: NextElementId = this.currentElement.Data.NextElementId;
+            this.currentElement.events.unsubscribeAll(`Element:${this.currentElement.data.id}:${EventTypes.End}`);
+            let nextElementId: NextElementId = this.currentElement.data.nextElementId;
 
             // NOTE: when used here this happens after the gateway execution
-            if (isGateway(this.currentElement.Data.ElementType as ElementTypes) && event.Data.Output) {
+            if (isGateway(this.currentElement.data.elementType as ElementTypes) && event.data.output) {
                 // NOTE: this works only works for one computed condition
                 // TODO: address multi condition .Output
-                const conditions = JSON.parse(event.Data.Output) as GateCondition[]
-                nextElementId = conditions[0].NextElementId;
+                const conditions = JSON.parse(event.data.output) as GateCondition[]
+                nextElementId = conditions[0].nextElementId;
             }
 
             if (!nextElementId) {
@@ -95,14 +95,14 @@ export class WorkFlow {
 
     private createElement(listItem: DataFlowElement): WorkflowElement {
 
-        const elementTypeId = listItem.ElementType as ElementTypes;
-        if (isTask(elementTypeId) && listItem.State) {
+        const elementTypeId = listItem.elementType as ElementTypes;
+        if (isTask(elementTypeId) && listItem.state) {
             return new Task(listItem, this.events);
         }
         if (isEvent(elementTypeId)) {
             return new Signal(listItem, this.events);
         }
-        if (isGateway(elementTypeId) && listItem.State) {
+        if (isGateway(elementTypeId) && listItem.state) {
             return new Gate(listItem, this.events);
         }
         throw new Error('ElementType is not set');
@@ -111,32 +111,32 @@ export class WorkFlow {
 
     private createEvent(eventName: EventName, message?: string) {
         return new WorkflowEvent(eventName, {
-            Id: this.Data.Id,
-            Output: message ? message : null,
-            NextElementId: null,
-            ElementType: ElementTypes.Workflow
+            id: this.data.id,
+            output: message ? message : null,
+            nextElementId: null,
+            elementType: ElementTypes.Workflow
         })
     }
 
     error(): void { // TODO: still need to add tests for this
         const ev = this.createEvent(EventTypes.Error)
-        this.events.push(`Workflow:${EventTypes.Error}:${this.Data.Id}`, ev);
+        this.events.push(`Workflow:${EventTypes.Error}:${this.data.id}`, ev);
     }
 
     start(): void {
         const ev = this.createEvent(EventTypes.Start)
         this.events.push('TEST:LOG', ev);
-        this.events.push(`Workflow:${this.Data.Id}:${EventTypes.Start}`, ev);
-        this.currentElementId = this.Data.WorkFlowStartElementId;
-        this.Data.WorkFlowStatus = StateStatus.Running;
+        this.events.push(`Workflow:${this.data.id}:${EventTypes.Start}`, ev);
+        this.currentElementId = this.data.workFlowStartElementId;
+        this.data.workFlowStatus = StateStatus.Running;
 
         this.progress(true);
     }
 
     progress(firstRun = false): void {
         const ev = this.createEvent(EventTypes.Progress);
-        this.events.push('TEST:LOG', {...ev, Data: {...ev.Data, Output: `Progress:Workflow:${this.Data.Id}`}});
-        this.events.push(`Workflow:${this.Data.Id}:${EventTypes.Progress}`, ev);
+        this.events.push('TEST:LOG', {...ev, data: {...ev.data, output: `Progress:Workflow:${this.data.id}`}});
+        this.events.push(`Workflow:${this.data.id}:${EventTypes.Progress}`, ev);
 
         this.whenElementEnds();
 
@@ -147,15 +147,15 @@ export class WorkFlow {
     }
 
     end(): void {
-        if (this.Data.WorkFlowStatus === StateStatus.Success) {
+        if (this.data.workFlowStatus === StateStatus.Success) {
             // TODO: still need to add tests for this block
             return;
         }
         const ev = this.createEvent(EventTypes.End)
-        this.events.push('TEST:LOG', {...ev, Data: {...ev.Data, Output: `End:Workflow:${this.Data.Id}`}});
+        this.events.push('TEST:LOG', {...ev, data: {...ev.data, output: `End:Workflow:${this.data.id}`}});
 
-        this.Data.WorkFlowStatus = StateStatus.Success;
-        this.events.push(`Workflow:${this.Data.Id}:${EventTypes.End}`, ev);
+        this.data.workFlowStatus = StateStatus.Success;
+        this.events.push(`Workflow:${this.data.id}:${EventTypes.End}`, ev);
     }
 
     onLog(callback: (data: DataEvent) => void): void {
@@ -163,28 +163,28 @@ export class WorkFlow {
     }
 
     on(eventName: EventName, callback: (data: DataEvent) => void): void {
-        this.events.subscribe(`Workflow:${this.Data.Id}:${eventName}`, data => {
+        this.events.subscribe(`Workflow:${this.data.id}:${eventName}`, data => {
             if (callback) {
                 callback(data);
             }
-            this.events.unsubscribeAll(`Workflow:${this.Data.Id}:${eventName}`);
+            this.events.unsubscribeAll(`Workflow:${this.data.id}:${eventName}`);
         });
     }
 
     public onSignal(callback: (data: DataEvent) => void): void {
         if (callback) {
             this.events.subscribe('Signal', data => {
-                this.Data.WorkFlowStatus = StateStatus.Idle;
+                this.data.workFlowStatus = StateStatus.Idle;
                 callback(data)
             })
         }
     }
 
     public sendSignal(signalData: string): void {
-        if (this.currentElement.Data.ElementType === 'Signal' &&
-            this.currentElement.Data.State?.Data === signalData) {
+        if (this.currentElement.data.elementType === 'Signal' &&
+            this.currentElement.data.state?.data === signalData) {
             const ev = this.currentElement.createEvent(EventTypes.Progress);
-            ev.Data.Output = 'Send signal was called';
+            ev.data.output = 'Send signal was called';
             this.events.push('TEST:LOG', ev);
             this.events.push(signalData, ev);
         }

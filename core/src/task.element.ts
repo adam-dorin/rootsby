@@ -12,12 +12,12 @@ export class Task extends FlowBaseElement {
 
     constructor(element: DataFlowElement, observerInstance: Observable<DataEvent>) {
         super(element, observerInstance);
-        if (!this.Data.State) {
+        if (!this.data.state) {
             this.hasError = true;
             return;
         }
         try {
-            this.parsedState = JSON.parse(this.Data.State.Data);
+            this.parsedState = JSON.parse(this.data.state.data);
         }catch (e){
             this.hasError = true;
         }
@@ -32,7 +32,7 @@ export class Task extends FlowBaseElement {
     private static async scriptExecutor(path: string, config: any): Promise<ScriptResponse> {
         return new Promise( (resolve, reject) => {
             import(path).then(script => {
-                resolve({ Output: script.default?script.default():script() } as ScriptResponse);
+                resolve({ output: script.default?script.default():script() } as ScriptResponse);
             }).catch(error => {
                 reject(error);
             })
@@ -41,19 +41,19 @@ export class Task extends FlowBaseElement {
 
     progress(): void {
         const types = ['ScriptExecution','ApiCall'];
-        if(!this.Data.State || !types.includes(this.Data.State?.Type)){
+        if(!this.data.state || !types.includes(this.data.state?.type)){
             this.error();
             this.end();
             return;
         }
 
         const ev = this.createEvent(EventTypes.Progress)
-        this.events.push(`Element:${this.Data.Id}:${EventTypes.Progress}`, ev);
+        this.events.push(`Element:${this.data.id}:${EventTypes.Progress}`, ev);
 
-        if (this.Data.State?.Type === 'ScriptExecution') {
+        if (this.data.state?.type === 'ScriptExecution') {
             Task.scriptExecutor(this.parsedState as string, {input: {}}).then(value => {
                 const ev = this.createEvent(EventTypes.End)
-                ev.Data.Output = value.Output;
+                ev.data.output = value.output;
                 this.end(ev);
             }).catch(error => {
                 const log_error = this.createEvent(EventTypes.Error, JSON.stringify(error))
@@ -62,10 +62,10 @@ export class Task extends FlowBaseElement {
                 this.end();
             })
         }
-        if (this.Data.State?.Type === 'ApiCall') {
+        if (this.data.state?.type === 'ApiCall') {
             Task.apiCall(this.parsedState as AxiosRequestConfig<any>).then(value => {
                 const ev = this.createEvent(EventTypes.End)
-                ev.Data.Output = JSON.stringify(value.data)
+                ev.data.output = JSON.stringify(value.data)
                 this.events.push(`TEST:LOG`, ev)
                 this.end(ev);
             }).catch(error => {

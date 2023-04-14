@@ -11,11 +11,11 @@ export class Signal extends FlowBaseElement {
 
     progress(): void {
         const ev = this.createEvent(EventTypes.Progress)
-        ev.Data.Output = JSON.stringify(this.Data.State);
-        this.events.push(`Element:${this.Data.Id}:${EventTypes.Progress}`, ev);
+        ev.data.output = JSON.stringify(this.data.state);
+        this.events.push(`Element:${this.data.id}:${EventTypes.Progress}`, ev);
         this.events.push('Signal',ev)
-        this.events.push(`TEST:LOG`,{...ev, Data:{...ev.Data, Output: `Progress:Element:${this.Data.Id}`}});
-        this.events.subscribe(this.Data.State?.Data as string,()=>{
+        this.events.push(`TEST:LOG`,{...ev, data:{...ev.data, output: `Progress:Element:${this.data.id}`}});
+        this.events.subscribe(this.data.state?.data as string,()=>{
             this.end();
         })
         // this.End();

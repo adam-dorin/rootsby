@@ -12,11 +12,11 @@ export class Gate extends FlowBaseElement {
     constructor(element: DataFlowElement, observerInstance: Observable<DataEvent>) {
         super(element, observerInstance);
         try {
-            if(!element.State){
+            if(!element.state){
                 this.hasError = true;
                 return;
             }
-            this.parsedState = JSON.parse(element.State.Data) as GateCondition[];
+            this.parsedState = JSON.parse(element.state.data) as GateCondition[];
         } catch (e) {
             this.hasError = true;
         }
@@ -24,13 +24,13 @@ export class Gate extends FlowBaseElement {
 
     start(event: DataEvent): void {
         const ev = this.createEvent(EventTypes.Start);
-        this.events.push(`TEST:LOG`, {...ev, Data: {...ev.Data, Output: `Start:Element:Gate:${this.Data.Id}`}});
-        this.progress(event.Data.Output === null ? undefined : event.Data.Output);
+        this.events.push(`TEST:LOG`, {...ev, data: {...ev.data, output: `Start:Element:Gate:${this.data.id}`}});
+        this.progress(event.data.output === null ? undefined : event.data.output);
     }
 
     end(event?: DataEvent): void {
         const _event = this.createEvent(EventTypes.End);
-        this.events.push(`Element:${this.Data.Id}:${EventTypes.End}`, event ? event : _event);
+        this.events.push(`Element:${this.data.id}:${EventTypes.End}`, event ? event : _event);
     }
 
     progress(input?: PrimitiveExpression | null): void {
@@ -41,22 +41,22 @@ export class Gate extends FlowBaseElement {
             return this.end(endEvent);
         }
         const ev = this.createEvent(EventTypes.Progress);
-        this.events.push(`Element:${EventTypes.Progress}:${this.Data.Id}`, ev);
-        const ev_log = {...ev, Data: {...ev.Data, Output: `Progress:Element:${this.Data.Id}`}};
+        this.events.push(`Element:${EventTypes.Progress}:${this.data.id}`, ev);
+        const ev_log = {...ev, data: {...ev.data, output: `Progress:Element:${this.data.id}`}};
         this.events.push(`TEST:LOG`, ev_log);
         try {
             const filteredConditions = this.parsedState.filter((condition: GateCondition) => {
-                return ExpressionParser.run(input as PrimitiveExpression, condition.State, condition.Operator)
+                return ExpressionParser.run(input as PrimitiveExpression, condition.state, condition.operator)
             });
             if (filteredConditions.length) {
-                endEvent.Data.Output = JSON.stringify(filteredConditions);
+                endEvent.data.output = JSON.stringify(filteredConditions);
                 return this.end(endEvent)
             } else {
                 this.error()
                 return this.end(endEvent);
             }
         } catch (e) {
-            endEvent.Data.Output = (e as any)?.message;
+            endEvent.data.output = (e as any)?.message;
             this.end(endEvent);
             return this.end(endEvent)
         }

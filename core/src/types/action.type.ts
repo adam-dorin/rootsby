@@ -1,6 +1,6 @@
 
 export interface ScriptResponse {
-    Output: string;
+    output: string;
 }
 
 export interface ScriptModule {
