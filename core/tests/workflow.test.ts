@@ -117,8 +117,8 @@ describe('Workflow should...', () => {
         })
         wf.onSignal((signal: DataEvent) => {
             try {
-                expect(wf.Data.WorkFlowStatus).toBe(StateStatus.Idle)
-                expect(JSON.parse(signal.Data.Output as string).Data).toBe('THIS_IS_THE_SIGNAL');
+                expect(wf.data.workFlowStatus).toBe(StateStatus.Idle)
+                expect(JSON.parse(signal.data.output as string).data).toBe('THIS_IS_THE_SIGNAL');
                 // writeJsonLogs(logs, () => {
                     done();
                 // });
@@ -151,7 +151,7 @@ describe('Workflow should...', () => {
         wf.onSignal((signal: DataEvent) => {
             try {
                 setTimeout(() => {
-                    wf.sendSignal(JSON.parse(signal.Data.Output as string).Data);
+                    wf.sendSignal(JSON.parse(signal.data.output as string).data);
                 }, 500)
             } catch (e) {
                 // writeJsonLogs(logs, () => {

@@ -32,7 +32,7 @@ describe('Signal should...', () => {
         const data = mockSignal_Simple();
         const signalInstance = new Signal(data.signal, observer);
 
-        observer.subscribe(`Element:${signalInstance.Data.Id}:${EventTypes.End}`, () => {
+        observer.subscribe(`Element:${signalInstance.data.id}:${EventTypes.End}`, () => {
             try {
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)
                 expect(filterLogsByType(logs, EventTypes.Error).length).toBe(0);
@@ -47,7 +47,7 @@ describe('Signal should...', () => {
 
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            observer.push(signalInstance.Data.State.Data as string, data.event);
+            observer.push(signalInstance.data.state.data as string, data.event);
             // we push the event
         },100);
     })

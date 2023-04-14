@@ -21,39 +21,39 @@ export const workflow_mocks: any = {};
 workflow_mocks.mockWorkflow = (id: string, elements: any[], startId: string) => {
     return {
         workflow: {
-            Id: id,
-            Description: "Description",
-            IsActive: true,
-            IsPublic: true, // true = can be started by anyone | false = can only be started by an Execution Signal
-            WorkFlowStatus: "3",
-            WorkFlowStartElementId: startId,
+            id: id,
+            description: "Description",
+            isActive: true,
+            isPublic: true, // true = can be started by anyone | false = can only be started by an Execution Signal
+            workFlowStatus: "3",
+            workFlowStartElementId: startId,
         },
         elements: [...elements]
     } as DataFlowConfiguration
 }
 workflow_mocks.makeTaskElement = (elementType: string, workflowId: string, nextElementId: string | null) => {
     const el: any = {
-        Id: uuid.v4(),
-        Name: "name-100",
-        Description: "Description 100",
-        State: null,
-        WorkFlowId: workflowId,
-        ElementType: "Task", // Task | Gate | Signal | Workflow
-        StatusId: "1",
-        NextElementId: nextElementId
+        id: uuid.v4(),
+        name: "name-100",
+        description: "Description 100",
+        state: null,
+        workFlowId: workflowId,
+        elementType: "Task", // Task | Gate | Signal | Workflow
+        statusId: "1",
+        nextElementId: nextElementId
     } as DataFlowElement
 
     if (elementType === WF.ScriptExecution) {
-        el['State'] = {
-            Type: WF.ScriptExecution,
+        el['state'] = {
+            type: WF.ScriptExecution,
             // The path here should be `workflowBasePath`+`localPath`+`fileName`
-            Data: JSON.stringify(path.resolve(process.cwd()+'/tests/mocks/task_scripts/task_script'))
+            data: JSON.stringify(path.resolve(process.cwd()+'/tests/mocks/task_scripts/task_script'))
         }
     }
     if (elementType === WF.ApiCall) {
-        el['State'] = {
-            Type: WF.ApiCall,
-            Data: "{\"url\":\"https://catfact.ninja/fact\",\"method\":\"GET\"}" // axios config
+        el['state'] = {
+            type: WF.ApiCall,
+            data: "{\"url\":\"https://catfact.ninja/fact\",\"method\":\"GET\"}" // axios config
         }
     }
 
@@ -61,43 +61,43 @@ workflow_mocks.makeTaskElement = (elementType: string, workflowId: string, nextE
 }
 workflow_mocks.makeConditionState = (op: string, state: string, id: string) => {
     return {
-        Operator: op,
-        State: state,
-        ElementType: "Condition",
-        NextElementId: id
+        operator: op,
+        state: state,
+        elementType: "Condition",
+        nextElementId: id
     }
 }
 workflow_mocks.makeGateElement = (workflowId: string, actions: any[]) => {
     const el: any = {
-        Id: uuid.v4(),
-        Name: "name-101",
-        Description: "Description 101",
-        State: {
-            Type: WF.ConditionList,
-            Data: JSON.stringify(actions)
+        id: uuid.v4(),
+        name: "name-101",
+        description: "Description 101",
+        state: {
+            type: WF.ConditionList,
+            data: JSON.stringify(actions)
             //[
             //workflow_mocks.makeConditionState('eq', 'go-to-103', 'string:uuid'),
             //workflow_mocks.makeConditionState('eq', 'go-to-105', 'string:uuid')
             //]
         },
-        WorkFlowId: workflowId,
-        ElementType: "Gate", // Task | Gate | Signal | Workflow
-        StatusId: "1",
-        NextElementId: null,
+        workFlowId: workflowId,
+        elementType: "Gate", // Task | Gate | Signal | Workflow
+        statusId: "1",
+        nextElementId: null,
 
     }
     return el;
 }
-workflow_mocks.makeSignalElement = (workflowId: string, nextElementId: string, state: { Type: WF, Data: string }) => {
+workflow_mocks.makeSignalElement = (workflowId: string, nextElementId: string, state: { type: WF, data: string }) => {
     const el: any = {
-        Id: uuid.v4(),
-        Name: "name-101",
-        Description: "Description 101",
-        WorkFlowId: workflowId,
-        ElementType: "Signal", // Task | Gate | Signal | Workflow
-        StatusId: "1",
-        NextElementId: nextElementId,
-        State: state
+        id: uuid.v4(),
+        name: "name-101",
+        description: "Description 101",
+        workFlowId: workflowId,
+        elementType: "Signal", // Task | Gate | Signal | Workflow
+        statusId: "1",
+        nextElementId: nextElementId,
+        state: state
     }
     return el;
 }
@@ -107,7 +107,7 @@ export const mockWorkflowData_TaskOnly_SE = () => {
     const elements = [
         workflow_mocks.makeTaskElement(WF.ScriptExecution, wfId, null)
     ]
-    return workflow_mocks.mockWorkflow(wfId, elements, elements[0].Id)
+    return workflow_mocks.mockWorkflow(wfId, elements, elements[0].id)
 }
 
 export const mockWorkflowData_TaskOnly_API = () => {
@@ -115,7 +115,7 @@ export const mockWorkflowData_TaskOnly_API = () => {
     const elements = [
         workflow_mocks.makeTaskElement(WF.ApiCall, wfId, null)
     ]
-    return workflow_mocks.mockWorkflow(wfId, elements, elements[0].Id)
+    return workflow_mocks.mockWorkflow(wfId, elements, elements[0].id)
 }
 
 export const mockWorkflowData_Gate_Simple = () => {
@@ -123,31 +123,31 @@ export const mockWorkflowData_Gate_Simple = () => {
     const elTrue = workflow_mocks.makeTaskElement(WF.ScriptExecution, wfId, null);
     const elFalse = workflow_mocks.makeTaskElement(WF.ScriptExecution, wfId, null);
     const gate = workflow_mocks.makeGateElement(wfId, [
-        workflow_mocks.makeConditionState('eq', 'THIS_IS_THE_RESULT', elTrue.Id),
-        workflow_mocks.makeConditionState('eq', 'SOME_OTHER_STUFF', elFalse.Id)
+        workflow_mocks.makeConditionState('eq', 'THIS_IS_THE_RESULT', elTrue.id),
+        workflow_mocks.makeConditionState('eq', 'SOME_OTHER_STUFF', elFalse.id)
     ])
 
     const elements = [
-        workflow_mocks.makeTaskElement(WF.ScriptExecution, wfId, gate.Id),
+        workflow_mocks.makeTaskElement(WF.ScriptExecution, wfId, gate.id),
         gate,
         elFalse,
         elTrue
     ]
-    return workflow_mocks.mockWorkflow(wfId, elements, elements[0].Id);
+    return workflow_mocks.mockWorkflow(wfId, elements, elements[0].id);
 }
 
 
 export const mockWorkflowData_Signal_Simple = () => {
     const wfId = uuid.v4();
     const postEl = workflow_mocks.makeTaskElement(WF.ScriptExecution, wfId, null);
-    const state = {Type: WF.CommandSignal, Data: 'THIS_IS_THE_SIGNAL'};
-    const signal = workflow_mocks.makeSignalElement(wfId, postEl.Id, state)
+    const state = {type: WF.CommandSignal, data: 'THIS_IS_THE_SIGNAL'};
+    const signal = workflow_mocks.makeSignalElement(wfId, postEl.id, state)
     const elements = [
-        workflow_mocks.makeTaskElement(WF.ScriptExecution, wfId, signal.Id),
+        workflow_mocks.makeTaskElement(WF.ScriptExecution, wfId, signal.id),
         signal,
         postEl
     ]
-    return workflow_mocks.mockWorkflow(wfId, elements, elements[0].Id)
+    return workflow_mocks.mockWorkflow(wfId, elements, elements[0].id)
 }
 
 export const mockTaskData_Task_Script_Execution = () => {
@@ -156,7 +156,7 @@ export const mockTaskData_Task_Script_Execution = () => {
 
 export const mockTaskData_Task_Script_Execution_Error = () => {
     const taskData = workflow_mocks.makeTaskElement(WF.ScriptExecution, uuid.v4(), null)
-    taskData.State.Data = JSON.stringify(path.resolve(process.cwd()+'/tests/mocks/task_scripts/task_script_error'));
+    taskData.state.data = JSON.stringify(path.resolve(process.cwd()+'/tests/mocks/task_scripts/task_script_error'));
     return taskData
 }
 
@@ -172,10 +172,10 @@ export const mockGateData = () => {
         workflow_mocks.makeConditionState('eq', 'SOME_OTHER_STUFF', elFalse)
     ])
     const event = new WorkflowEvent(EventTypes.Start, {
-        Id: uuid.v4(),
-        ElementType: ElementTypes.Gate,
-        NextElementId: null,
-        Output: 'THIS_IS_THE_RESULT'
+        id: uuid.v4(),
+        elementType: ElementTypes.Gate,
+        nextElementId: null,
+        output: 'THIS_IS_THE_RESULT'
     })
     return {elFalse, elTrue, gate, event};
 }
@@ -187,10 +187,10 @@ export const mockNullGateData = () => {
         workflow_mocks.makeConditionState('eq', 'SOME_OTHER_STUFF', elFalse)
     ])
     const event = new WorkflowEvent(EventTypes.Start, {
-        Id: uuid.v4(),
-        ElementType: ElementTypes.Gate,
-        NextElementId: null,
-        Output: null
+        id: uuid.v4(),
+        elementType: ElementTypes.Gate,
+        nextElementId: null,
+        output: null
     })
     return {gate, event};
 }
@@ -202,10 +202,10 @@ export const mockInvalidGateData = () => {
         workflow_mocks.makeConditionState('eq', 'SOME_OTHER_STUFF', elFalse)
     ])
     const event = new WorkflowEvent(EventTypes.Start, {
-        Id: uuid.v4(),
-        ElementType: ElementTypes.Gate,
-        NextElementId: null,
-        Output: `_____THIS_IS_NOT_THE_RESULT__________`
+        id: uuid.v4(),
+        elementType: ElementTypes.Gate,
+        nextElementId: null,
+        output: `_____THIS_IS_NOT_THE_RESULT__________`
     })
     return {gate, event};
 }
@@ -217,13 +217,13 @@ export const mockInvalidStateGateData = () => {
         workflow_mocks.makeConditionState('eq', 'SOME_OTHER_STUFF', elFalse)
     ])
     const event = new WorkflowEvent(EventTypes.Start, {
-        Id: uuid.v4(),
-        ElementType: ElementTypes.Gate,
-        NextElementId: null,
-        Output: `THIS_IS_THE_RESULT`
+        id: uuid.v4(),
+        elementType: ElementTypes.Gate,
+        nextElementId: null,
+        output: `THIS_IS_THE_RESULT`
     })
 
-    gate.State = null;
+    gate.state = null;
 
     return {gate, event};
 }
@@ -236,13 +236,13 @@ export const mockInvalidConditionsGateData = () => {
         workflow_mocks.makeConditionState('eqaa', 'SOME_OTHER_STUFF', elFalse)
     ])
     const event = new WorkflowEvent(EventTypes.Start, {
-        Id: uuid.v4(),
-        ElementType: ElementTypes.Gate,
-        NextElementId: null,
-        Output: `THIS_IS_THE_RESULT`
+        id: uuid.v4(),
+        elementType: ElementTypes.Gate,
+        nextElementId: null,
+        output: `THIS_IS_THE_RESULT`
     })
 
-    gate.State = null;
+    gate.state = null;
 
     return {gate, event};
 }
@@ -250,13 +250,13 @@ export const mockInvalidConditionsGateData = () => {
 export const mockSignal_Simple = () => {
     const wfId = uuid.v4();
 
-    const state = {Type: WF.CommandSignal, Data: 'THIS_IS_THE_SIGNAL'};
+    const state = {type: WF.CommandSignal, data: 'THIS_IS_THE_SIGNAL'};
     const signal = workflow_mocks.makeSignalElement(wfId, uuid.v4(), state)
     const event = new WorkflowEvent(EventTypes.Start, {
-        Id: uuid.v4(),
-        ElementType: ElementTypes.Signal,
-        NextElementId: null,
-        Output: null
+        id: uuid.v4(),
+        elementType: ElementTypes.Signal,
+        nextElementId: null,
+        output: null
     })
     return {signal, event};
 }

@@ -37,7 +37,7 @@ describe('A task should...', () => {
 
         const taskData = mockTaskData_Task_Script_Execution();
         const taskInstance = new Task(taskData, observer)
-        observer.subscribe(`Element:${taskInstance.Data.Id}:${EventTypes.End}`, data => {
+        observer.subscribe(`Element:${taskInstance.data.id}:${EventTypes.End}`, data => {
             done();
         })
         taskInstance.start()
@@ -49,7 +49,7 @@ describe('A task should...', () => {
         const taskData = mockTaskData_Task_Api_Call();
         const taskInstance = new Task(taskData, observer)
         // observer.Subscribe('TEST:LOG',console.log)
-        observer.subscribe(`Element:${taskInstance.Data.Id}:${EventTypes.End}`, data => {
+        observer.subscribe(`Element:${taskInstance.data.id}:${EventTypes.End}`, data => {
             done();
         })
         taskInstance.start()
@@ -58,10 +58,10 @@ describe('A task should...', () => {
     test('Error and End if no state is provided after calling Start()', done => {
 
         const taskData = mockTaskData_Task_Script_Execution();
-        taskData.State = undefined;
+        taskData.state = undefined;
         const taskInstance = new Task(taskData, observer)
 
-        observer.subscribe(`Element:${taskInstance.Data.Id}:${EventTypes.End}`, data => {
+        observer.subscribe(`Element:${taskInstance.data.id}:${EventTypes.End}`, data => {
             try {
                 expect(filterLogsOutput(logs, 'Element:Error').length).toBeGreaterThanOrEqual(1);
                 expect(filterLogsOutput(logs, 'End:Element').length).toBeGreaterThanOrEqual(1);
@@ -77,13 +77,13 @@ describe('A task should...', () => {
 
         const taskData = mockTaskData_Task_Api_Call();
         //==========================================
-        const data = JSON.parse(taskData.State.Data);
+        const data = JSON.parse(taskData.state.data);
         data['url'] = 'https://localhost:112233';
-        taskData.State.Data = JSON.stringify(data);
+        taskData.state.data = JSON.stringify(data);
         //==========================================
         const taskInstance = new Task(taskData, observer)
 
-        observer.subscribe(`Element:${taskInstance.Data.Id}:${EventTypes.End}`, data => {
+        observer.subscribe(`Element:${taskInstance.data.id}:${EventTypes.End}`, data => {
             try {
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)
                 expect(filterLogsByType(logs, EventTypes.Error).length).toBeGreaterThanOrEqual(1)
@@ -99,7 +99,7 @@ describe('A task should...', () => {
         const taskData = mockTaskData_Task_Script_Execution_Error();
         const taskInstance = new Task(taskData, observer)
 
-        observer.subscribe(`Element:${taskInstance.Data.Id}:${EventTypes.End}`, () => {
+        observer.subscribe(`Element:${taskInstance.data.id}:${EventTypes.End}`, () => {
             try {
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)
                 expect(filterLogsByType(logs, EventTypes.Error).length).toBeGreaterThanOrEqual(1)
@@ -115,11 +115,11 @@ describe('A task should...', () => {
 
         const taskData = mockTaskData_Task_Script_Execution();
         //====================================
-        taskData.State.Data = 'THIS_WILL_NOT_BE_PARSED';
+        taskData.state.data = 'THIS_WILL_NOT_BE_PARSED';
         //====================================
         const taskInstance = new Task(taskData, observer)
         //====================================
-        observer.subscribe(`Element:${taskInstance.Data.Id}:${EventTypes.End}`, () => {
+        observer.subscribe(`Element:${taskInstance.data.id}:${EventTypes.End}`, () => {
             try {
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)
                 expect(filterLogsByType(logs, EventTypes.Error).length).toBeGreaterThanOrEqual(1)
@@ -135,11 +135,11 @@ describe('A task should...', () => {
 
         const taskData = mockTaskData_Task_Script_Execution();
         //====================================
-        taskData.State.Data = JSON.stringify("null");
+        taskData.state.data = JSON.stringify("null");
         //====================================
         const taskInstance = new Task(taskData, observer)
         //====================================
-        observer.subscribe(`Element:${taskInstance.Data.Id}:${EventTypes.End}`, () => {
+        observer.subscribe(`Element:${taskInstance.data.id}:${EventTypes.End}`, () => {
             try {
                 // writeJsonLogs(logs);
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)
@@ -156,11 +156,11 @@ describe('A task should...', () => {
 
         const taskData = mockTaskData_Task_Script_Execution();
         //====================================
-        taskData.State.Type = 'THIS_TYPE_IS_INVALID';
+        taskData.state.type = 'THIS_TYPE_IS_INVALID';
         //====================================
         const taskInstance = new Task(taskData, observer)
         //====================================
-        observer.subscribe(`Element:${taskInstance.Data.Id}:${EventTypes.End}`, () => {
+        observer.subscribe(`Element:${taskInstance.data.id}:${EventTypes.End}`, () => {
             try {
                 // writeJsonLogs(logs);
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)

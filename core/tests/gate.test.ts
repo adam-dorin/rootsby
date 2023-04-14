@@ -25,12 +25,12 @@ describe('Gate should...', () => {
     test('Push a filtered list on end for a valid condition list', done => {
         const gateData = mockGateData();
         const gateInstance = new Gate(gateData.gate, observer);
-        observer.subscribe(`Element:${gateInstance.Data.Id}:${EventTypes.End}`, data => {
+        observer.subscribe(`Element:${gateInstance.data.id}:${EventTypes.End}`, data => {
             try {
-                const output: GateCondition[] = JSON.parse(data.Data.Output as string) as GateCondition[];
+                const output: GateCondition[] = JSON.parse(data.data.output as string) as GateCondition[];
                 expect(output.length).toBe(1);
-                expect(output[0].NextElementId).toBe(gateData.elTrue);
-                expect(output[0].NextElementId).not.toBe(gateData.elFalse);
+                expect(output[0].nextElementId).toBe(gateData.elTrue);
+                expect(output[0].nextElementId).not.toBe(gateData.elFalse);
                 done();
             } catch (e) {
                 done(e);
@@ -43,28 +43,28 @@ describe('Gate should...', () => {
         const gateData = mockNullGateData();
         const gateInstance = new Gate(gateData.gate, observer);
 
-        observer.subscribe(`Element:${gateInstance.Data.Id}:${EventTypes.End}`, data => {
+        observer.subscribe(`Element:${gateInstance.data.id}:${EventTypes.End}`, data => {
             try {
                 expect(filterLogsByType(logs, EventTypes.Error).length).toBeGreaterThanOrEqual(1)
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)
-                expect(data.Data.Output).toBe(null);
+                expect(data.data.output).toBe(null);
                 done();
             } catch (e) {
                 done(e);
             }
         })
-        gateData.event.Data.Output = null;
+        gateData.event.data.output = null;
         gateInstance.start(gateData.event);
     })
     // 3. Error and End if the State can't be parsed
     test('Error and End if the State can\'t be parsed', done => {
         const gateData = mockInvalidStateGateData();
         const gateInstance = new Gate(gateData.gate, observer);
-        observer.subscribe(`Element:${gateInstance.Data.Id}:${EventTypes.End}`, data => {
+        observer.subscribe(`Element:${gateInstance.data.id}:${EventTypes.End}`, data => {
             try {
                 expect(filterLogsByType(logs, EventTypes.Error).length).toBeGreaterThanOrEqual(1)
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)
-                expect(data.Data.Output).toBe(null);
+                expect(data.data.output).toBe(null);
                 done();
             } catch (e) {
                 done(e);
@@ -78,12 +78,12 @@ describe('Gate should...', () => {
         const gateData = mockInvalidConditionsGateData();
         const gateInstance = new Gate(gateData.gate, observer);
 
-        observer.subscribe(`Element:${gateInstance.Data.Id}:${EventTypes.End}`, data => {
+        observer.subscribe(`Element:${gateInstance.data.id}:${EventTypes.End}`, data => {
             try {
                 // writeJsonLogs(logs);
                 expect(filterLogsByType(logs, EventTypes.Error).length).toBeGreaterThanOrEqual(1)
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)
-                expect(data.Data.Output).toBe(null);
+                expect(data.data.output).toBe(null);
                 done();
             } catch (e) {
                 done(e);
@@ -95,11 +95,11 @@ describe('Gate should...', () => {
     test('Error and End if the input is doesn\'t produce an Output', done => {
         const gateData = mockInvalidGateData();
         const gateInstance = new Gate(gateData.gate, observer);
-        observer.subscribe(`Element:${gateInstance.Data.Id}:${EventTypes.End}`, data => {
+        observer.subscribe(`Element:${gateInstance.data.id}:${EventTypes.End}`, data => {
             try {
                 expect(filterLogsByType(logs, EventTypes.Error).length).toBeGreaterThanOrEqual(1)
                 expect(filterLogsByType(logs, EventTypes.End).length).toBeGreaterThanOrEqual(1)
-                expect(data.Data.Output).toBe(null);
+                expect(data.data.output).toBe(null);
                 done();
             } catch (e) {
                 done(e);
