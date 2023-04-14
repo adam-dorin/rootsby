@@ -19,26 +19,26 @@ const callWorkflow = async (req, res) => {
  
   const ll = {
     "workflow": {
-      "Id": "bc6ad544-b1df-4fff-8b81-ccd3764cb1a1",
-      "Description": "Description",
-      "IsActive": true,
-      "IsPublic": true,
-      "WorkFlowStatus": "3",
-      "WorkFlowStartElementId": "9a3e807e-39c8-4e23-a67c-00ddba21163b"
+      "id": "bc6ad544-b1df-4fff-8b81-ccd3764cb1a1",
+      "description": "Description",
+      "isActive": true,
+      "isPublic": true,
+      "workFlowStatus": "3",
+      "workFlowStartElementId": "9a3e807e-39c8-4e23-a67c-00ddba21163b"
     },
     "elements": [
       {
-        "Id": "9a3e807e-39c8-4e23-a67c-00ddba21163b",
-        "Name": "name-100",
-        "Description": "This is a description",
-        "State": {
-          "Type": "ScriptExecution",
-          "Data": JSON.stringify(path.join(__dirname,"../content", "scripts", "make_some_noise"))
+        "id": "9a3e807e-39c8-4e23-a67c-00ddba21163b",
+        "name": "name-100",
+        "description": "This is a description",
+        "state": {
+          "type": "ScriptExecution",
+          "data": JSON.stringify(path.join(__dirname,"../content", "scripts", "make_some_noise"))
         },
-        "WorkFlowId": "bc6ad544-b1df-4fff-8b81-ccd3764cb1a1",
-        "ElementType": "Task",
-        "StatusId": "1",
-        "NextElementId": null
+        "workFlowId": "bc6ad544-b1df-4fff-8b81-ccd3764cb1a1",
+        "elementType": "Task",
+        "statusId": "1",
+        "nextElementId": null
       }
     ]
   };
