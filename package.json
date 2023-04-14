@@ -1,4 +1,5 @@
 {
+  "private": true,
   "devDependencies": {
     "@types/jest": "^29.5.0"
   }
