@@ -30,8 +30,8 @@
     "./src/"
   ],
   "keywords": [],
-  "author": "Dorin Adam",
-  "license": "ISC",
+  "author": "Dorin Adam <adam@adventurerlog.com> (adventurerlog.com)",
+  "license": "MIT",
   "dependencies": {
     "dotenv": "^16.0.3",
     "escape-html": "^1.0.3",
