@@ -26,7 +26,6 @@ export function RenderPage() {
     useEffect(() => {
         setPath(getWindowPath())
         window.addEventListener('popstate', () => {
-            console.log('popstate')
             setPath(getWindowPath())
         })
     }, [])
