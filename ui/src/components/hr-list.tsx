@@ -1,18 +1,37 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 export type HrItem = {
     name: string;
     description: string;
 }
 
-export function HrList({ list, select }: { list: HrItem[], select?: number }) {
-    const [selected, setSelected] = useState(select||0);
+const handleScroll = (event: React.WheelEvent<HTMLDivElement>, parentContainerRef: React.MutableRefObject<HTMLDivElement | null>) => {
+    console.log('scrolling');
+    if (!parentContainerRef) return;
+
+    const parentContainer = parentContainerRef.current;
+    if (parentContainer) {
+        const { deltaY } = event;
+        parentContainer.scrollLeft += deltaY;
+    }
+};
+
+export function HrList({ list, select, onSelection }: { list: HrItem[], select?: number, onSelection?: (index: number, item:HrItem) => void }) {
+    const [selected, setSelected] = useState(select || 0);
+    const totalWidth = list.map((itm, index) => `${itm.name}-${index}`.length).reduce((a, b) => a + b, 0) * 16;
+    const parentContainerRef: React.MutableRefObject<HTMLDivElement | null> = useRef(null);
+
+    const handleSelection = (index: number,item:HrItem) => {
+        setSelected(index);
+        if (onSelection) onSelection(index, item);
+    }
+
     return (
         <>
             <div className="flex justify-start w-full">
-                <div className="flex items-center space-x-4 w-full">
-                    <div className="tabs tabs-boxed m-0 relative w-full">
+                <div className="space-x-4 w-full overflow-hidden" ref={parentContainerRef} onWheel={(event) => handleScroll(event, parentContainerRef)}>
+                    <div className="tabs tabs-boxed m-0 relative w-full" style={({ width: totalWidth })} >
                         {list.map((item: HrItem, index: number) =>
-                            (<span onClick={() => setSelected(index)} key={index} className={index === selected ? 'tab tab-lg tab-lifted tab-active' : 'tab tab-lg tab-lifted'}>{item.name}</span>))
+                            (<span onClick={() => handleSelection(index, item)} key={index} className={index === selected ? 'tab tab-lg tab-lifted tab-active' : 'tab tab-lg tab-lifted'}>{item.name}-{index}</span>))
                         }
                     </div>
                 </div>
