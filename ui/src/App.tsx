@@ -7,10 +7,10 @@ import { RenderPage } from './router'
 
 function App() {
   return (
-    <>
+    <div className='container mx-auto text-center'>
       <Navbar />
       <RenderPage/>
-    </>
+    </div>
   )
 }
 
