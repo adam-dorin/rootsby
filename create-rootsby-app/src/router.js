@@ -10,6 +10,8 @@ function router(app) {
   // Prompts
   app.get("/prompt/list", promptController.getPromptList);
   app.get("/prompt/:name", promptController.getPrompt);
+  app.get("/thread/list", promptController.getThreadList);
+  app.get("/thread/:id", promptController.getThread);
   app.post("/prompt/:name/execute", promptController.executePrompt);
   app.post("/prompt", promptController.createOrUpdatePrompt);
   app.delete("/prompt/:name", promptController.deletePrompt);
