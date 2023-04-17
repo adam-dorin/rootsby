@@ -1,38 +1,64 @@
 // Prompts
-const fs = require("fs");
 const path = require("path");
 const uuid = require("uuid");
-const {getInMemoryStore} = require("./data-store");
 let defaultExecutor;
 
-const inMemoryPromptStore = getInMemoryStore([__dirname, "../content/prompts/store.json"],{prompts:{}, threads:{} });
-
+const { db } = require("./db");
 // app.get('/prompt/list', async (req, res)=> {
 const getPromptList = async (req, res) => {
-  const data = Object.keys(inMemoryPromptStore.prompts).map((key) => {
-    return { name: key, prompt: inMemoryPromptStore[key] };
-  });
+  const data = await db().all("SELECT * FROM prompts");
+  res.status(200).json({ data });
+};
+
+const getThreadList = async (req, res) => {
+  const data = await db().all("SELECT * FROM threads");
+
   res.status(200).json({ data });
 };
 
 // app.get('/prompt/:name', async (req, res)=> {
 const getPrompt = async (req, res) => {
   const promptName = req.params.name;
-  const prompt = inMemoryPromptStore.prompts[promptName];
-
+  const prompt = await db().get(
+    "SELECT * FROM prompts WHERE name = ?",
+    promptName
+  );
+  console.log(prompt);
   if (prompt) {
-    res.json(prompt);
+    res.status(200).json(prompt);
   } else {
     res.status(404).send(`Prompt ${promptName} not found`);
   }
+};
+const getThread = async (req, res) => {
+  const threadId = req.params.id;
+  const thread = await db().get("SELECT * FROM threads WHERE id = ?", threadId);
+  const messages = await db().all(
+    "SELECT * FROM messages WHERE threadId = ? ORDER BY created_on",
+    threadId
+  );
+
+  if (thread) {
+    res.status(200).json({ ...thread, messages });
+  } else {
+    res.status(404).send(`Prompt ${promptName} not found`);
+  }
+  const data = Object.keys(inMemoryPromptStore.threads).map((key) => {
+    return { id: key, prompt: inMemoryPromptStore[key] };
+  });
+  res.status(200).json({ data });
 };
 
 // app.post('/prompt/:name/execute', async (req, res)=> {
 const executePrompt = async (req, res) => {
   const promptName = req.params.name;
   const body = req.body;
-  const promptBody = inMemoryPromptStore.prompts[promptName];
-  if (!promptBody) {
+  const prompt = await db().get(
+    "SELECT * FROM prompts WHERE name = ?",
+    promptName
+  );
+
+  if (!prompt) {
     res.status(404).send(`Prompt ${promptName} not found`);
     return;
   }
@@ -45,49 +71,84 @@ const executePrompt = async (req, res) => {
 
   const config = {
     apiKey: process.env.OPEN_AI_KEY,
-    system: promptBody.content,
+    system: prompt.content,
     chatConfig: body.chatConfig || {},
   };
   let id = body.threadId || uuid.v4();
-  if (!inMemoryPromptStore.threads[body.threadId]) {
-    inMemoryPromptStore.threads[id] = [
-      { role: "system", content: config.system },
-      { role: "user", content: body.text },
-    ];
+  const thread = await db().get("SELECT * FROM threads WHERE id = ?", id);
+  if (!thread) {
+    await db().run(
+      "INSERT INTO threads (id, name, promptId) VALUES (?, ?, ?)",
+      id,
+      "new Thread",
+      prompt.id
+    );
+    // insert system message and user message into messages table
+    await db().run(
+      "INSERT INTO messages (id, threadId, author, name, message, created_on) VALUES (?, ?, ?, ?, ?, ?)",
+      uuid.v4(),
+      id,
+      "system",
+      "system",
+      config.system,
+      new Date().getTime()
+    );
+    await db().run(
+      "INSERT INTO messages (id, threadId, author, name, message, created_on) VALUES (?, ?, ?, ?, ?, ?)",
+      uuid.v4(),
+      id,
+      "user",
+      "user",
+      body.text,
+      new Date().getTime()
+    );
   } else {
-    inMemoryPromptStore.threads[body.threadId].push({
-      role: "user",
-      content: body.text,
-    });
+    await db().run(
+      "INSERT INTO messages (id, threadId, author, name, message, created_on) VALUES (?, ?, ?, ?, ?, ?)",
+      uuid.v4(),
+      id,
+      "user",
+      "user",
+      body.text,
+      new Date().getTime()
+    );
   }
+
   try {
     console.log("Executing prompt");
-    console.log(inMemoryPromptStore.threads[id]);
-    console.log(inMemoryPromptStore.threads);
-    // config: { apiKey: string, system: string, chatConfig: object },  messages: array
+    // order by created_on
+    const messages = await db().all(
+      "SELECT * FROM messages WHERE threadId = ? ORDER BY created_on",
+      id
+    );
+    console.log(messages);
     const result = await defaultExecutor(
       config,
-      inMemoryPromptStore.threads[id]
+      messages.map((m) => ({ role: m.author, content: m.message }))
     );
-    if(!result) {
+    if (!result) {
       return res.status(500).json({ message: "Error executing prompt" });
     }
-    const responseMessage = { role: "assistant", content: result };
-    inMemoryPromptStore.threads[id].push(responseMessage);
-
-    fs.writeFile(
-      path.join(__dirname, "../content/prompts/store.json"),
-      JSON.stringify(inMemoryPromptStore),
-      (err) => {
-        console.log(err);
-        res.status(200).json({
-          threadId: id,
-          reply: responseMessage
-        });
-      }
+    // insert assistant message into messages table
+    const respMsg = {
+      id: uuid.v4(),
+      threadId: id,
+      author: "assistant",
+      name: "assistant",
+      message: result,
+      created_on: new Date().getTime(),
+    };
+    await db().run(
+      "INSERT INTO messages (id, threadId, author, name, message, created_on) VALUES (?, ?, ?, ?, ?, ?)",
+      respMsg.id,
+      respMsg.threadId,
+      respMsg.author,
+      respMsg.name,
+      respMsg.message,
+      respMsg.created_on
     );
 
-   
+    res.status(200).json(respMsg);
   } catch (e) {
     console.log(e);
     res.status(500).json({ message: "Error executing prompt" });
@@ -97,46 +158,64 @@ const executePrompt = async (req, res) => {
 // app.post('/prompt', async (req, res)=> {
 const createOrUpdatePrompt = async (req, res) => {
   // {name: string, prompt: {content: string, model:'openai-chatgpt-davinci-3'} }
+  try {
+    const { name, model, content } = req.body;
 
-  const promptName = req.body.name;
-  const prompt = req.body.prompt;
-
-  inMemoryPromptStore.prompts[promptName] = prompt;
-  console.log(path.join(__dirname, "../content/prompts/store.json"));
-  fs.writeFile(
-    path.join(__dirname, "../content/prompts/store.json"),
-    JSON.stringify(inMemoryPromptStore),
-    (err) => {
-      console.log(err);
-      res
-        .status(201)
-        .json({ message: `Prompt ${promptName} created or updated` });
+    if (!name || !model || !content) {
+      res.status(400).send("Invalid prompt");
+      return;
     }
-  );
+    const prompt = await db().get("SELECT * FROM prompts WHERE name = ?", name);
+    if (prompt) {
+      await db().run(
+        "UPDATE prompts SET id = ?, model = ?, content = ? WHERE name = ?",
+        uuid.v4(),
+        model,
+        content,
+        name
+      );
+    } else {
+      await db().run(
+        "INSERT INTO prompts (name, model, content) VALUES (?, ?, ?)",
+        name,
+        model,
+        content
+      );
+    }
+
+    res.status(201).json({ message: `Prompt ${name} created or updated` });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ message: "General Error" });
+  }
 };
 
 // app.delete('/prompt', async (req, res)=> {
 const deletePrompt = async (req, res) => {
-  const promptName = req.params.name;
+  try {
+    const promptName = req.params.name;
 
-  if (!inMemoryPromptStore.prompts[promptName]) {
-    res.status(404).send(`Prompt ${promptName} not found`);
-    return;
-  }
-  console.log(inMemoryPromptStore);
-  delete inMemoryPromptStore.prompts[promptName];
-  fs.writeFile(
-    path.join(__dirname, "../content/prompts/store.json"),
-    JSON.stringify(inMemoryPromptStore),
-    (err) => {
-      res.status(200).json({ message: `Prompt ${promptName} deleted` });
+    const prompt = await db().get(
+      "SELECT * FROM prompts WHERE name = ?",
+      promptName
+    );
+    if (!prompt) {
+      res.status(404).send(`Prompt ${promptName} not found`);
+      return;
     }
-  );
+    await db().run("DELETE FROM prompts WHERE name = ?", promptName);
+    res.status(200).json({ message: `Prompt ${promptName} deleted` });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({ message: "General Error" });
+  }
 };
 
 exports = module.exports = {
   getPromptList,
   getPrompt,
+  getThreadList,
+  getThread,
   executePrompt,
   createOrUpdatePrompt,
   deletePrompt,
