@@ -40,6 +40,8 @@
     "marked": "^4.3.0",
     "openai": "^3.2.1",
     "rootsby": "^0.1.8",
+    "sqlite": "^4.1.2",
+    "sqlite3": "^5.1.6",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
