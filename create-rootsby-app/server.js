@@ -2,6 +2,7 @@
 
 const escapeHtml = require("escape-html");
 const express = require("express");
+const cors = require("cors");
 const fs = require("fs");
 const marked = require("marked");
 const path = require("path");
@@ -28,6 +29,7 @@ const router = require("./src/router");
   app.set("view engine", "md");
 
   app.use(express.json());
+  app.use(cors());
   app.use(express.urlencoded({ extended: true }));
 
   router(app);

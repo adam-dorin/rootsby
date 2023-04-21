@@ -33,6 +33,7 @@
   "author": "Dorin Adam <adam@adventurerlog.com> (adventurerlog.com)",
   "license": "MIT",
   "dependencies": {
+    "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "escape-html": "^1.0.3",
     "express": "^4.18.2",
