@@ -8,6 +8,20 @@ import { useEffectOnce } from '../use-effect-once';
 import { API_URL } from '../utils'
 import { TableColumn, TableList, TableRow } from '../components/table';
 import { Modal } from '../components/modal';
+import { Dropdown, DropdownItem } from '../components/dropdown';
+
+
+// Still need to implement:
+// - [ ] Create thread from prompt
+// - [ ] Set prompt as active
+// - [ ] See the prompt details of the active thread
+// - [ ] Create prompt (the form is there, but the API call is not implemented)
+// - [ ] Create thread (markup there, but the API call is not implemented)
+// - [ ] Create messages for no data scenarios
+// - [ ] Initialize promptList from API call
+// - [ ] url search params for threadId
+// - [ ] url search params for promptId
+// - [ ] url search params reaction to promptId and threadId changes ( set and update)
 
 type ChatMessage = {
   content: string;
@@ -34,6 +48,70 @@ const sendApiMessage = (text: string, threadId?: string) => {
   return axios.post(`${API_URL}/message/send`, body)
 }
 
+
+const promptColumns = [
+  { label: 'Prompt Name', type: 'text', value: 'name' },
+  { label: 'Action', type: 'text', value: 'action' },
+] as TableColumn[];
+
+const onPromptCreate = (prompt: { name: string, model: string, content: string }) => {
+  console.log(prompt);
+  if (prompt.name && prompt.model && prompt.content) {
+    axios.post(`${API_URL}/prompt`, prompt).then(response => {
+      console.log(response);
+    })
+  }
+}
+
+function PromptTableActions() {
+  return (
+    <>
+      <button className="btn btn-ghost btn-xs">Set as active</button>
+      <button className="btn btn-ghost btn-xs">Create thread from</button>
+    </>
+  )
+}
+
+const promptRowData = [
+  { name: 'one_', action: <PromptTableActions /> },
+  { name: 'one_', action: <PromptTableActions /> },
+] as TableRow[];
+
+function PromptCreate({ onSubmit, onClose }: { onClose?:()=>void, onSubmit: (prompt: { name: string, model: string, content: string }) => void }) {
+  const dropdownItems: DropdownItem[] = [
+    { label: 'ChatGpt3.5', value: 'gpt-3.5-turbo' },
+  ];
+  const [model, setModel] = useState({} as DropdownItem);
+  const [promptName, setPromptName] = useState('');
+  const [promptContent, setPromptContent] = useState('');
+  const nameRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null);
+  const contentRef: React.MutableRefObject<HTMLTextAreaElement | null> = useRef(null);
+  return (
+    <>
+      <div className='flex flex-col justify-center w-full'>
+        <p className='mb-3 text-left'>Create new Prompt:</p>
+        <input ref={nameRef} onChange={() => setPromptName((nameRef.current as HTMLInputElement).value)} type="text" placeholder="name_of_prompt" className="input input-bordered mb-3 input-secondary w-full max-w-xs" />
+        {/* <input type="text" placeholder="Type here" className="input input-bordered mx-auto mb-3 input-secondary w-full max-w-xs" /> */}
+        <select className="select select-secondary mb-3 w-full max-w-xs">
+          <option disabled selected>Select model...</option>
+          {dropdownItems.map((item, index) => {
+            return (
+              <option onClick={() => setModel(item)} key={index}>{item.label}</option>
+            )
+          })
+          }
+        </select>
+        <textarea ref={contentRef} onChange={() => setPromptContent((nameRef.current as HTMLInputElement).value)} className="textarea textarea-secondary mb-3 w-[80%]" placeholder="Content"></textarea>
+        <div className="w-full flex justify-end">
+          <button onClick={()=>onClose && onClose()} className="btn btn-sm">Cancel</button>
+          <button onClick={() => onSubmit && onSubmit({ name: promptName, model: model.value, content: promptContent })} className="btn btn-sm">Create</button>
+
+        </div>
+      </div>
+    </>
+  )
+}
+
 const inputs = [
   { label: "Name", type: "text", value: "Dorin Adam" },
   { label: "Age", type: "number", value: "" },
@@ -43,23 +121,14 @@ const inputs = [
 const list = [] as HrItem[];
 const messages = [] as ChatMessage[];
 
-const promptColumns = [
-  { label: 'Prompt Name', type: 'text', value: 'name' },
-  { label: 'Description', type: 'text', value: 'description' },
-  { label: 'Action', type: 'text', value: 'action' },
-] as TableColumn[];
-
-const promptRowData = [
-  { name: 'one_', description: 'Chat Page not implemented!' },
-  { name: 'one_', description: 'Chat Page not implemented!' },
-] as TableRow[];
-
 export function ChatPage() {
   const [messageValue, setMessageValue] = useState("");
   const [messageList, setMessageList] = useState([] as any[]);
   const messagesEndRef = useRef(null);
   const [threadList, setThreadList] = useState([] as any[]);
-  const [promptList, setPromptList] = useState([{}, {}, {}, {}, {}] as any[]);
+  const [promptList, setPromptList] = useState([] as any[]);
+  const [showPromptCreate, setShowPromptCreate] = useState(false);
+
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
 
   const openPromptsModal = () => {
@@ -143,13 +212,14 @@ export function ChatPage() {
       <Modal visible={isPromptModalOpen}
         content={
           <>
-            <TableList columns={promptColumns} data={promptRowData} />
+            {!showPromptCreate && <TableList columns={promptColumns} data={promptRowData} />}
+            {showPromptCreate && <PromptCreate onSubmit={onPromptCreate} onClose={()=>setShowPromptCreate(false)} />}
           </>
         }
         actions={
           <>
-            <button className="btn btn-primary">Accept</button>
-            <button className="btn btn-ghost">Deny</button>
+            {!showPromptCreate && <button className="btn btn-primary" onClick={() => setShowPromptCreate(true)}>Create Thread</button>}
+        
           </>
         }
       />
