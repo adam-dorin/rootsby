@@ -41,12 +41,8 @@ const getThread = async (req, res) => {
   if (thread) {
     res.status(200).json({ ...thread, messages });
   } else {
-    res.status(404).send(`Prompt ${promptName} not found`);
+    res.status(404).send(`Thread ${threadId} not found`);
   }
-  const data = Object.keys(inMemoryPromptStore.threads).map((key) => {
-    return { id: key, prompt: inMemoryPromptStore[key] };
-  });
-  res.status(200).json({ data });
 };
 
 // app.post('/prompt/:name/execute', async (req, res)=> {
