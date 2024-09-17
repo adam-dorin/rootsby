@@ -221,15 +221,12 @@ export class Rootsby {
     }
 
     if (!data) {
-      console.log("pushing to first function [1]");
       this.eventBus.push(config.functions[0].id, null);
     }
     if (data && !data.currentStepId) {
-      console.log("pushing to first function [2]");
       this.eventBus.push(config.functions[0].id, data.currentStepData);
     }
     if (data && data.currentStepId) {
-      console.log("pushing to first function [3]");
       this.eventBus.push(data.currentStepId, data.currentStepData);
     }
   }
