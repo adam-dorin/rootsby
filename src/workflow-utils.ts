@@ -1,5 +1,5 @@
 export type PrimitiveExpression = string | number | boolean;
-export type Operator = 'eq' | 'not' | 'gt' | 'lt' | 'gt_eq' | 'lt_eq';
+export type ExprOperators = 'eq' | 'not' | 'gt' | 'lt' | 'gt_eq' | 'lt_eq';
 
 /**
  * @description Equals **===**  => **eq**
@@ -18,7 +18,7 @@ export enum ExprOp {
     lt_eq = 'lt_eq'
 }
 
-type EngineSignature = { [name in Operator]: (first: PrimitiveExpression, second: PrimitiveExpression) => boolean };
+type EngineSignature = { [name in ExprOperators]: (first: PrimitiveExpression, second: PrimitiveExpression) => boolean };
 
 export class ExpressionParser {
 
@@ -31,7 +31,7 @@ export class ExpressionParser {
         lt_eq: (first: PrimitiveExpression, second: PrimitiveExpression) => first <= second
     };
 
-    public static run(first: PrimitiveExpression, second: PrimitiveExpression, operator: Operator): boolean {
+    public static run(first: PrimitiveExpression, second: PrimitiveExpression, operator: ExprOperators): boolean {
         return ExpressionParser.engine[operator](first, second);
     }
 
