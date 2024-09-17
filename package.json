@@ -1,6 +1,35 @@
 {
-  "private": true,
+  "name": "rootsby",
+  "description": "A simple, lightweight, and fast workflow engine for NodeJS.",
+  "version": "0.1.8",
+  "main": "workflow.js",
+  "scripts": {
+    "tsc": "tsc",
+    "test": "jest",
+    "flow:basic": "ts-node ./src/workflow.ts",
+    "test:coverage": "jest --coverage",
+    "test:view-rep": "npx http-server coverage/lcov-report"
+  },
+  "keywords": [],
+  "author": "Dorin Adam <k8rxh81v2@mozmail.com> (k8rxh81v2@mozmail.com)",
+  "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^29.5.0"
-  }
+    "@types/jest": "^29.5.13",
+    "@types/node": "^22.5.5",
+    "@types/uuid": "^10.0.0",
+    "dotenv": "^16.4.5",
+    "eslint": "^9.10.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2",
+    "uuid": "^10.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/adam-dorin/rootsby/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adam-dorin/rootsby"
+  },
+  "homepage": "https://github.com/adam-dorin/rootsby#readme"
 }
