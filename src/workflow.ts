@@ -1,58 +1,16 @@
-import {  Observable } from "./observer";
-import { ExprOperators, ExpressionParser, PrimitiveExpression } from "./workflow-utils";
-
-export enum WorkflowType {
-  LongRunning = "LongRunning",
-  ShortRunning = "ShortRunning",
-}
-type WorkflowCondition = {
-  operator: ExprOperators;
-  value: PrimitiveExpression;
-};
-
-type FileLoader = Promise<string>;
-
-type WorkflowMiddlewareFunction = {
-  name: string;
-  executor: (data: unknown) => unknown;
-};
-
-type WorkflowConfig = {
-  id: string;
-  name: string;
-  type: WorkflowType;
-  description?: string;
-  functions: WorkflowFunction[];
-};
-
-type WorkflowFunction = {
-  id: string;
-  name: string;
-  description?: string;
-  middleware?: string[];
-  file?: string | Promise<(data: unknown) => unknown> | ((data: unknown) => unknown);
-  next: WorkflowNextFunction[];
-};
-
-enum WorkflowEvent {
-  startWorkflow = "startWorkflow",
-  endWorkflow = "endWorkflow",
-  startStep = "startStep",
-  endStep = "endStep",
-  beforeMiddleware = "beforeMiddleware",
-  afterMiddleware = "afterMiddleware",
-  error = "error",
-}
-
-type WorkflowNextFunction = {
-  functionId: string;
-  values: WorkflowCondition[];
-};
-type WorkflowFunctionsValidationResult = {
-  error: boolean;
-  results: WorkflowNextFunction[];
-};
-
+import { Observable } from "./observer";
+import {
+  PrimitiveExpression,
+  WorkflowCondition,
+  WorkflowConfig,
+  WorkflowEvent,
+  WorkflowFunction,
+  WorkflowFunctionsValidationResult,
+  WorkflowMiddlewareFunction,
+  WorkflowNextFunction,
+  WorkflowType,
+} from "./types";
+import { WorkflowUtils } from "./workflow-utils";
 
 /**
  *
@@ -120,7 +78,7 @@ export class Rootsby {
     const next = nextFunctions.filter((workflowNextFunction: WorkflowNextFunction) => {
       return workflowNextFunction.values
         .map((condition: WorkflowCondition) => {
-          return ExpressionParser.run(result as PrimitiveExpression, condition.value, condition.operator);
+          return WorkflowUtils.evaluateExpression(result as PrimitiveExpression, condition.value, condition.operator);
         })
         .every((value: boolean) => value === true);
     });
@@ -231,8 +189,13 @@ export class Rootsby {
     }
   }
 
-  public on(eventName: WorkflowEvent, callback: (data: unknown) => void) {
-    this.eventBus.subscribe(eventName, callback);
+  public progress(callback: (eventName: WorkflowEvent, data: unknown) => void): void {
+    const events = Object.values(WorkflowEvent);
+    events.forEach((event) => {
+      this.eventBus.subscribe(event, (data) => {
+        callback(event as WorkflowEvent, data);
+      });
+    });
   }
 }
 
@@ -323,26 +286,9 @@ async function main() {
       console.log("logger:>>>>", name, data);
     },
   });
-  rootsby.on(WorkflowEvent.startWorkflow, (data) => {
-    console.log("startWorkflow", data);
-  });
-  rootsby.on(WorkflowEvent.endWorkflow, (data) => {
-    console.log("endWorkflow", data);
-  });
-  rootsby.on(WorkflowEvent.startStep, (data) => {
-    console.log("startStep", data);
-  });
-  rootsby.on(WorkflowEvent.endStep, (data) => {
-    console.log("endStep", data);
-  });
-  rootsby.on(WorkflowEvent.beforeMiddleware, (data) => {
-    console.log("beforeMiddleware", data);
-  });
-  rootsby.on(WorkflowEvent.afterMiddleware, (data) => {
-    console.log("afterMiddleware", data);
-  });
-  rootsby.on(WorkflowEvent.error, (data) => {
-    console.log("error", data);
+
+  rootsby.progress((eventName: WorkflowEvent, data: unknown) => {
+    console.log("progress:>>>>", eventName, data);
   });
 
   await rootsby.runWorkflow(config, { currentStepData: "hello" });
