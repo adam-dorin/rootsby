@@ -113,6 +113,9 @@ dist_browser
 # database
 .db/
 
+# experiments
+experiments/
+
 # documentation
 documentation/
 typedoc.json
