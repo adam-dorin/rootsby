@@ -9,5 +9,6 @@ describe('workflow tests', () => {
 
     test('workflow', done => {
        expect(true).toBe(true);
+         done();
     })
 })
