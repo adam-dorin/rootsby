@@ -1,10 +1,12 @@
 import { Observable } from "./observer";
 import {
+  MiddlewareExecutorInput,
   PrimitiveExpression,
   WorkflowCondition,
   WorkflowConfig,
   WorkflowEvent,
   WorkflowFunction,
+  WorkflowFunctionInput,
   WorkflowFunctionsValidationResult,
   WorkflowMiddlewareFunction,
   WorkflowNextFunction,
@@ -104,7 +106,8 @@ export class Rootsby {
         throw new Error(`Middleware function ${middlewareFunctionName} not found. Check if \`setMiddlewareConfig\` was called`);
       }
       this.eventBus.push(WorkflowEvent.beforeMiddleware, { middlewareFunctionName, data: result });
-      result = middlewareFunction.executor(result);
+      const metadata = { ...(middlewareFunction.metadata ? middlewareFunction.metadata : {}) };
+      result = middlewareFunction.executor({ metadata, data: result });
       this.eventBus.push(WorkflowEvent.afterMiddleware, { middlewareFunctionName, data: result });
     }
     return result;
@@ -124,9 +127,12 @@ export class Rootsby {
         result = this.runMiddlewareFunctions(workflowFunction.middleware, result);
       }
 
-      if (workflowFunction.file && typeof workflowFunction.file === "function") {
-        // TODO: strengthen the type here
-        result = (workflowFunction.file as (data: unknown) => unknown)(data);
+      if (workflowFunction.executor && typeof workflowFunction.executor === "function") {
+        const input: WorkflowFunctionInput = {
+          data: result,
+          metadata: workflowFunction.metadata ? workflowFunction.metadata : {},
+        };
+        result = (workflowFunction.executor as (data: WorkflowFunctionInput) => unknown)(input);
       }
 
       const nextValid = this.validateNextFunctions(result as PrimitiveExpression, workflowFunction.next);
@@ -157,20 +163,26 @@ export class Rootsby {
     };
   }
 
-  // TODO: add a type for the file loader | acctually make it work
   private async loadFile(file: string): Promise<(input?: any) => any> {
-    return new Promise((resolve, reject) => {
-      resolve(() => "world");
+    return new Promise(async (resolve, reject) => {
+      try {
+        const fileContent = await import(file);
+        if (!fileContent || !fileContent.default) {
+          throw new Error("File content not found or not exported as default");
+        }
+        resolve(fileContent.default as (data: unknown) => unknown);
+      } catch (error) {
+        reject({ content: (error as any).message });
+      }
     });
   }
 
   public async runWorkflow(config: WorkflowConfig, data?: { currentStepId?: string; currentStepData?: unknown }): Promise<void> {
     this.config = config;
-    this.eventBus.push(WorkflowEvent.startWorkflow, { config, data });
     for (const workflowFunction of config.functions) {
       const functionId = workflowFunction.id;
       if (workflowFunction.file) {
-        workflowFunction.file = await this.loadFile(workflowFunction.file as string);
+        workflowFunction.executor = await this.loadFile(workflowFunction.file as string);
       }
 
       this.functionMap.set(functionId, workflowFunction);
@@ -179,118 +191,29 @@ export class Rootsby {
     }
 
     if (!data) {
+      this.eventBus.push(WorkflowEvent.startWorkflow, { functionId: config.functions[0].id, data });
       this.eventBus.push(config.functions[0].id, null);
     }
     if (data && !data.currentStepId) {
-      this.eventBus.push(config.functions[0].id, data.currentStepData);
+      this.eventBus.push(WorkflowEvent.startWorkflow, { functionId: config.functions[0].id, data });
+      this.eventBus.push(config.functions[0].id, data);
     }
     if (data && data.currentStepId) {
+      this.eventBus.push(WorkflowEvent.startWorkflow, { functionId: data.currentStepId, data });
       this.eventBus.push(data.currentStepId, data.currentStepData);
     }
   }
 
-  public progress(callback: (eventName: WorkflowEvent, data: unknown) => void): void {
-    const events = Object.values(WorkflowEvent);
-    events.forEach((event) => {
+  public progress({ events, handler }: { events?: WorkflowEvent[]; handler: (eventName: WorkflowEvent, data: unknown) => void }): void {
+    let eventsFiltered = Object.values(WorkflowEvent);
+    if (events) {
+      eventsFiltered = eventsFiltered.filter((event) => events.includes(event as WorkflowEvent));
+    }
+    console.log("eventsFiltered", eventsFiltered);
+    eventsFiltered.forEach((event) => {
       this.eventBus.subscribe(event, (data) => {
-        callback(event as WorkflowEvent, data);
+        handler(event as WorkflowEvent, data);
       });
     });
   }
 }
-
-// a workflowConfig example with a single function and valid uuids
-const config_: WorkflowConfig = {
-  id: "uuid",
-  name: "string",
-  type: WorkflowType.ShortRunning,
-  description: "string",
-  functions: [
-    {
-      id: "uuid",
-      name: "string",
-      description: "string",
-      file: "string", // loader
-      middleware: ["middleman"],
-      next: [
-        {
-          functionId: "uuid",
-          values: [
-            {
-              operator: "eq",
-              value: "string",
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
-
-async function main() {
-  const config: WorkflowConfig = {
-    id: "926cc4ce-36dc-4238-9e59-cae361710973",
-    name: "string",
-    type: WorkflowType.ShortRunning,
-    description: "string",
-    functions: [
-      {
-        id: "044ac245-f7b8-4a0f-84ea-ba3dfe494826",
-        name: "string",
-        description: "string",
-        file: "string", // loader
-        middleware: ["middleman"],
-        next: [
-          {
-            functionId: "bf28b4ed-ca2b-4811-9999-f3f31bdc3e49",
-            values: [
-              {
-                operator: "eq",
-                value: "world",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        id: "bf28b4ed-ca2b-4811-9999-f3f31bdc3e49",
-        name: "string",
-        description: "string",
-        file: "string", // loader
-        middleware: ["middleman"],
-        next: [
-          {
-            functionId: "uuid",
-            values: [
-              {
-                operator: "eq",
-                value: "string",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-  const rootsby = new Rootsby({
-    middlewareFunctions: [
-      {
-        name: "middleman",
-        executor: (data: unknown) => {
-          console.log("middleman:", data);
-          return data;
-        },
-      },
-    ],
-    logger: (name, data) => {
-      console.log("logger:>>>>", name, data);
-    },
-  });
-
-  rootsby.progress((eventName: WorkflowEvent, data: unknown) => {
-    console.log("progress:>>>>", eventName, data);
-  });
-
-  await rootsby.runWorkflow(config, { currentStepData: "hello" });
-}
-main();

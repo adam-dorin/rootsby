@@ -8,9 +8,11 @@ export type WorkflowCondition = {
 
 export type FileLoader = Promise<string>;
 
+export type MiddlewareExecutorInput = { data: unknown; metadata: Record<string, unknown> };
 export type WorkflowMiddlewareFunction = {
   name: string;
-  executor: (data: unknown) => unknown;
+  metadata?: Record<string, unknown>;
+  executor: (data: MiddlewareExecutorInput) => unknown;
 };
 
 export type WorkflowConfig = {
@@ -21,12 +23,16 @@ export type WorkflowConfig = {
   functions: WorkflowFunction[];
 };
 
+export type WorkflowFunctionInput = { data: unknown; metadata?: Record<string, unknown> };
+
 export type WorkflowFunction = {
   id: string;
   name: string;
   description?: string;
   middleware?: string[];
-  file?: string | Promise<(data: unknown) => unknown> | ((data: unknown) => unknown);
+  metadata?: Record<string, unknown>;
+  file?: string | Promise<(data: WorkflowFunctionInput) => unknown>;
+  executor?: (data: WorkflowFunctionInput) => unknown;
   next: WorkflowNextFunction[];
 };
 
@@ -40,7 +46,7 @@ export type WorkflowFunctionsValidationResult = {
 };
 
 export type WorkflowConfigInput = { name?: string; type?: WorkflowType; description?: string; functions?: WorkflowFunction[] };
-export type WorkflowFunctionInput = { name?: string; description?: string; file: string; middleware?: string[]; next?: WorkflowNextFunction[] };
+export type WorkflowFunctionConfigInput = { name?: string; description?: string; file: string; middleware?: string[]; next?: WorkflowNextFunction[] };
 
 export enum WorkflowEvent {
   startWorkflow = "startWorkflow",

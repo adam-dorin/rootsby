@@ -7,7 +7,7 @@ import {
   WorkflowConfig,
   WorkflowConfigInput,
   WorkflowFunction,
-  WorkflowFunctionInput,
+  WorkflowFunctionConfigInput,
   WorkflowNextFunction,
   WorkflowType,
 } from "./types";
@@ -70,7 +70,7 @@ export class WorkflowUtils {
     return config;
   }
 
-  public static createFunctionConfig({ name, description, file, middleware, next }: WorkflowFunctionInput): WorkflowFunction {
+  public static createFunctionConfig({ name, description, file, middleware, next }: WorkflowFunctionConfigInput): WorkflowFunction {
     const id = uuidv4();
     const func: WorkflowFunction = {
       id: id,
@@ -99,31 +99,3 @@ export class WorkflowUtils {
     return condition;
   }
 }
-
-const c = WorkflowUtils.createWorkflowConfig({ type: WorkflowType.LongRunning });
-const f1 = WorkflowUtils.createFunctionConfig({ file: "file" });
-const f2 = WorkflowUtils.createFunctionConfig({ file: "file" });
-const f3 = WorkflowUtils.createFunctionConfig({ file: "file" });
-f1.next = [
-  WorkflowUtils.createNextFunctionConfig({
-    functionId: f2.id,
-    values: [
-      WorkflowUtils.createNextConditionConfig({
-        operator: ExprOp.eq,
-        value: "value",
-      }),
-    ],
-  }),
-];
-f2.next = [
-  WorkflowUtils.createNextFunctionConfig({
-    functionId: f3.id,
-    values: [
-      WorkflowUtils.createNextConditionConfig({
-        operator: ExprOp.eq,
-        value: "value",
-      }),
-    ],
-  }),
-];
-c.functions = [f1, f2, f3];
