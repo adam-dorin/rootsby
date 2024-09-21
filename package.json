@@ -4,6 +4,9 @@
   "version": "0.1.8",
   "main": "workflow.js",
   "scripts": {
+    "build": "tsc .",
+    "clean": "test -d ./dist && rm -rf dist",
+    "deploy": "npm run clean && npm run build && npm run version patch && cat package.json > ./dist package.json && cat README.md > ./dist README.md && cd dist && npm publish",
     "tsc": "tsc",
     "test": "jest",
     "flow:basic": "ts-node ./src/workflow.ts",
