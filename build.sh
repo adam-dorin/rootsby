@@ -1,5 +1,4 @@
 # !#/bin/bash
-
 echo "============================"
 echo "Cleaning dist folder"
 if test -d ./dist
