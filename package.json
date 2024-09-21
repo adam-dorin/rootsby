@@ -4,9 +4,11 @@
   "version": "0.1.8",
   "main": "workflow.js",
   "scripts": {
-    "build": "tsc .",
+    "build": "tsc --project tsconfig.json",
     "clean": "test -d ./dist && rm -rf dist",
-    "deploy": "npm run clean && npm run build && npm run version patch && cat package.json > ./dist package.json && cat README.md > ./dist README.md && cd dist && npm publish",
+    "deploy:move-files": "cat package.json > ./dist package.json && cat README.md > ./dist README.md",
+    "deploy:publish": "cd dist && npm publish",
+    "deploy": "npm run clean && npm run build && npm version patch && npm run deploy:move-files && npm run deploy:publish",
     "tsc": "tsc",
     "test": "jest",
     "flow:basic": "ts-node ./src/workflow.ts",
