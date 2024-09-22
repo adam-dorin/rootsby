@@ -11,28 +11,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{secrets.GH_PAT}}
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: npm version patch --git-tag-version false
-      - run: cat package.json > ./dist/package.json
-      - run: cat README.md > ./dist/README.md
-      - run: cat .npmrc > ./dist/.npmrc
-      # - run: ls -la
-      # - run: cd dist
-      # - run: ls -la
-      - run: npm publish
+      - name: Install dependencies
+        run: npm ci    
+      - name: Run tests
+        run: npm test
+      - name: Build package
+        run: npm run build
+      - name: Configure deploy package
+        run: |
+          npm version patch --git-tag-version false
+          cat package.json > ./dist/package.json
+          cat README.md > ./dist/README.md
+          cat .npmrc > ./dist/.npmrc
+          cat LICENSE > ./dist/LICENSE
+      - name: Publish package
+        run: npm publish
         working-directory: dist
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-      - run: PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
-      - run: |
+      - name: Bump version
+        run: |
+          PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.email "username@users.noreply.github.com"
           git add .
           git commit -m "[skip ci] Bumping version package to $PACKAGE_VERSION"
           git push
