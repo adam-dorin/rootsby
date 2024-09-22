@@ -4,19 +4,17 @@
   "version": "0.1.11",
   "main": "workflow.js",
   "scripts": {
+    "examples": "npx ts-node examples/index.ts",
     "build": "tsc --project tsconfig.json",
     "tsc": "tsc",
     "test": "jest",
-    "flow:basic": "ts-node ./src/workflow.ts",
     "test:coverage": "jest --coverage",
     "test:view-rep": "npx http-server coverage/lcov-report"
   },
   "keywords": [],
   "author": "Dorin Adam <k8rxh81v2@mozmail.com> (k8rxh81v2@mozmail.com)",
   "license": "MIT",
-  "dependencies": {
-    "uuid": "^10.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/jest": "^29.5.13",
     "@types/node": "^22.5.5",
