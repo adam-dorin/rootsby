@@ -47,7 +47,12 @@ const configuration: WorkflowConfig = {
 
 const workflow = new Rootsby();
 workflow.progress({
-  events: [WorkflowEvent.startWorkflow, WorkflowEvent.endWorkflow, WorkflowEvent.startStep, WorkflowEvent.endStep],
+  events: [
+      WorkflowEvent.startWorkflow,
+      WorkflowEvent.endWorkflow,
+      WorkflowEvent.startStep,
+      WorkflowEvent.endStep
+],
   handler: (eventName: WorkflowEvent, data: any) => {
     console.log(eventName, data);
   },
