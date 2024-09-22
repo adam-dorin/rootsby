@@ -191,11 +191,13 @@ export class Rootsby {
     }
     if (data && !data.currentStepId) {
       this.int.eventBus.push(WorkflowEvent.startWorkflow, { functionId: config.functions[0].id, data });
-      this.int.eventBus.push(config.functions[0].id, data);
+      const d = data.currentStepData ? data.currentStepData : null;
+      this.int.eventBus.push(config.functions[0].id, d);
     }
     if (data && data.currentStepId) {
       this.int.eventBus.push(WorkflowEvent.startWorkflow, { functionId: data.currentStepId, data });
-      this.int.eventBus.push(data.currentStepId, data.currentStepData);
+      const d = data.currentStepData ? data.currentStepData : null;
+      this.int.eventBus.push(data.currentStepId, d);
     }
   }
 
@@ -211,31 +213,3 @@ export class Rootsby {
     });
   }
 }
-
-
-// What are the test cases here?
-
-// 1. Long running workflow => stop at every step and needs to be restarted specific where it was previously
-// 2. Short running workflow => start from the beginning and end at the end
-// 3. Middleware functions => run middleware functions at every step where they are defined ( 2 cases: with and without metadata)
-// 4. Function files => run functions from files at every step where they are defined ( 2 cases: with and without metadata)
-// 5. Function references => run functions from references at every step where they are defined ( 2 cases: with and without metadata)
-
-
-// 1. Run a workflow from start to finish with the given data (type: short running)  
-// 2. Run a workflow from start to finish with the given data and log all events (type: short running)
-
-// 3. Run a workflow from a specific step with the given data and log all events (type: long running)
-// 4. Run a workflow from start to finish with the given data and log specific events (type: long running)
-
-// 5. Run a workflow with middleware functions and log all events (type: short running)
-// 6. Run a workflow with middleware functions and log specific events (type: short running)
-
-// 7. Run a workflow with middleware functions and log all events (type: long running)
-// 8. Run a workflow with middleware functions and log specific events (type: long running)
-
-// 9. Run a workflow with function files and log all events (type: long running)
-// 10. Run a workflow with function files and log specific events (type: long running)
-
-// 11. Run a workflow with function files and middleware functions and log all events (type: long running)
-// 12. Run a workflow with function files and middleware functions and log specific events (type: long running)
