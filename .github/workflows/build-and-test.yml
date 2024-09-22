@@ -22,9 +22,9 @@ jobs:
       - run: cat package.json > ./dist/package.json
       - run: cat README.md > ./dist/README.md
       - run: cat .npmrc > ./dist/.npmrc
-      - run: npm whoami && ls -la
+      - run: ls -la
       - run: cd dist
-      - run: npm whoami && ls -la
+      - run: ls -la
       - run: npm publish
       - run: cd ..
       - run: PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
