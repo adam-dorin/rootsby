@@ -15,51 +15,38 @@ import {
 import { WorkflowUtils } from "./workflow-utils";
 
 /**
- *
- * Need to cover 2 cases for the workflow:
- *
- * 1. The Workflow is a long running workflow
- *
- * When the workflow is a long running workflow,
- * the workflow will be started and will stop and output its current state and step step.
- * The workflow will be started again from the last step.
- *
- * 2. The Workflow is a short running workflow
- * When the workflow is a short running workflow,
- * the workflow will be started and will run from function to function until the end.
- *
+ * @internal 
+ * @ignore 
  */
-export class Rootsby {
-  private functionMap: Map<string, WorkflowFunction>;
-  private middlewareFunctionMap: Map<string, WorkflowMiddlewareFunction>;
-  private eventBus: Observable<unknown>;
-  private config?: WorkflowConfig;
+export class RootsbyInternals {
+  public functionMap: Map<string, WorkflowFunction>;
+  public middlewareFunctionMap: Map<string, WorkflowMiddlewareFunction>;
+  public eventBus: Observable<unknown>;
+  public config?: WorkflowConfig;
 
   constructor(config?: { middlewareFunctions?: WorkflowMiddlewareFunction[]; logger?: (name: string, data: unknown) => void }) {
     this.functionMap = new Map();
     this.middlewareFunctionMap = new Map();
     this.eventBus = new Observable<unknown>(false);
-
     if (config && config.middlewareFunctions) {
       this.setMiddlewareConfig(config.middlewareFunctions);
     }
-
     if (config && config.logger) {
       this.setLogger(config.logger);
     }
   }
 
-  private setMiddlewareConfig(middlewareFunctions: WorkflowMiddlewareFunction[] = []) {
+  public setMiddlewareConfig(middlewareFunctions: WorkflowMiddlewareFunction[] = []) {
     this.middlewareFunctionMap = new Map();
     middlewareFunctions.forEach((fn) => {
       this.middlewareFunctionMap.set(fn.name, fn);
     });
   }
-  private setLogger(logger: (name: string, data: unknown) => void) {
+  public setLogger(logger: (name: string, data: unknown) => void) {
     this.eventBus.setLogger(logger);
   }
 
-  private endWorkflow(data?: { functionId: string; data: unknown }) {
+  public endWorkflow(data?: { functionId: string; data: unknown }) {
     if (data) {
       this.eventBus.push(WorkflowEvent.endWorkflow, data);
     }
@@ -68,12 +55,12 @@ export class Rootsby {
     });
   }
 
-  private logErrorAndEndWorkflow(data: { functionId: string; data: unknown; error: string }): void {
+  public logErrorAndEndWorkflow(data: { functionId: string; data: unknown; error: string }): void {
     this.eventBus.push(WorkflowEvent.error, data);
     this.endWorkflow();
   }
 
-  private validateNextFunctions(result: PrimitiveExpression, nextFunctions: WorkflowNextFunction[]): WorkflowFunctionsValidationResult {
+  public validateNextFunctions(result: PrimitiveExpression, nextFunctions: WorkflowNextFunction[]): WorkflowFunctionsValidationResult {
     if (typeof result !== "string" && typeof result !== "number" && typeof result !== "boolean") {
       return { error: true, results: [] };
     }
@@ -87,7 +74,7 @@ export class Rootsby {
     return { error: false, results: next };
   }
 
-  private advanceToNextFunction(functionId: string, result: unknown, nextValidFunctions: WorkflowNextFunction[]): void {
+  public advanceToNextFunction(functionId: string, result: unknown, nextValidFunctions: WorkflowNextFunction[]): void {
     const workflowFunction = this.functionMap.get(functionId);
     if (!workflowFunction) {
       throw new Error(`Function with id ${functionId} not found`);
@@ -98,7 +85,7 @@ export class Rootsby {
     }
   }
 
-  private runMiddlewareFunctions(middlewareFunctionNames: string[], data: unknown): unknown {
+  public runMiddlewareFunctions(middlewareFunctionNames: string[], data: unknown): unknown {
     let result: unknown = data;
     for (const middlewareFunctionName of middlewareFunctionNames) {
       const middlewareFunction = this.middlewareFunctionMap.get(middlewareFunctionName);
@@ -113,7 +100,7 @@ export class Rootsby {
     return result;
   }
 
-  private eventBusSubscriber(functionId: string): (data: unknown) => void {
+  public eventBusSubscriber(functionId: string): (data: unknown) => void {
     return async (data: unknown) => {
       this.eventBus.push(WorkflowEvent.startStep, { functionId, data: data });
       let result: unknown = data;
@@ -163,7 +150,7 @@ export class Rootsby {
     };
   }
 
-  private async loadFile(file: string): Promise<(input?: any) => any> {
+  public async loadFile(file: string): Promise<(input?: any) => any> {
     return new Promise(async (resolve, reject) => {
       try {
         const fileContent = await import(file);
@@ -176,31 +163,39 @@ export class Rootsby {
       }
     });
   }
+}
+export class Rootsby {
+
+  private int: RootsbyInternals;
+
+  constructor(config?: { middlewareFunctions?: WorkflowMiddlewareFunction[]; logger?: (name: string, data: unknown) => void }) {
+    this.int = new RootsbyInternals(config);
+  }
 
   public async runWorkflow(config: WorkflowConfig, data?: { currentStepId?: string; currentStepData?: unknown }): Promise<void> {
-    this.config = config;
+    this.int.config = config;
     for (const workflowFunction of config.functions) {
       const functionId = workflowFunction.id;
       if (workflowFunction.file) {
-        workflowFunction.executor = await this.loadFile(workflowFunction.file as string);
+        workflowFunction.executor = await this.int.loadFile(workflowFunction.file as string);
       }
 
-      this.functionMap.set(functionId, workflowFunction);
-      const subscriber = this.eventBusSubscriber(functionId);
-      this.eventBus.subscribe(functionId, subscriber);
+      this.int.functionMap.set(functionId, workflowFunction);
+      const subscriber = this.int.eventBusSubscriber(functionId);
+      this.int.eventBus.subscribe(functionId, subscriber);
     }
 
     if (!data) {
-      this.eventBus.push(WorkflowEvent.startWorkflow, { functionId: config.functions[0].id, data });
-      this.eventBus.push(config.functions[0].id, null);
+      this.int.eventBus.push(WorkflowEvent.startWorkflow, { functionId: config.functions[0].id, data });
+      this.int.eventBus.push(config.functions[0].id, null);
     }
     if (data && !data.currentStepId) {
-      this.eventBus.push(WorkflowEvent.startWorkflow, { functionId: config.functions[0].id, data });
-      this.eventBus.push(config.functions[0].id, data);
+      this.int.eventBus.push(WorkflowEvent.startWorkflow, { functionId: config.functions[0].id, data });
+      this.int.eventBus.push(config.functions[0].id, data);
     }
     if (data && data.currentStepId) {
-      this.eventBus.push(WorkflowEvent.startWorkflow, { functionId: data.currentStepId, data });
-      this.eventBus.push(data.currentStepId, data.currentStepData);
+      this.int.eventBus.push(WorkflowEvent.startWorkflow, { functionId: data.currentStepId, data });
+      this.int.eventBus.push(data.currentStepId, data.currentStepData);
     }
   }
 
@@ -209,11 +204,38 @@ export class Rootsby {
     if (events) {
       eventsFiltered = eventsFiltered.filter((event) => events.includes(event as WorkflowEvent));
     }
-    console.log("eventsFiltered", eventsFiltered);
     eventsFiltered.forEach((event) => {
-      this.eventBus.subscribe(event, (data) => {
+      this.int.eventBus.subscribe(event, (data) => {
         handler(event as WorkflowEvent, data);
       });
     });
   }
 }
+
+
+// What are the test cases here?
+
+// 1. Long running workflow => stop at every step and needs to be restarted specific where it was previously
+// 2. Short running workflow => start from the beginning and end at the end
+// 3. Middleware functions => run middleware functions at every step where they are defined ( 2 cases: with and without metadata)
+// 4. Function files => run functions from files at every step where they are defined ( 2 cases: with and without metadata)
+// 5. Function references => run functions from references at every step where they are defined ( 2 cases: with and without metadata)
+
+
+// 1. Run a workflow from start to finish with the given data (type: short running)  
+// 2. Run a workflow from start to finish with the given data and log all events (type: short running)
+
+// 3. Run a workflow from a specific step with the given data and log all events (type: long running)
+// 4. Run a workflow from start to finish with the given data and log specific events (type: long running)
+
+// 5. Run a workflow with middleware functions and log all events (type: short running)
+// 6. Run a workflow with middleware functions and log specific events (type: short running)
+
+// 7. Run a workflow with middleware functions and log all events (type: long running)
+// 8. Run a workflow with middleware functions and log specific events (type: long running)
+
+// 9. Run a workflow with function files and log all events (type: long running)
+// 10. Run a workflow with function files and log specific events (type: long running)
+
+// 11. Run a workflow with function files and middleware functions and log all events (type: long running)
+// 12. Run a workflow with function files and middleware functions and log specific events (type: long running)
