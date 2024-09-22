@@ -1,5 +1,5 @@
 // Run all examples from here
 
-import { basicExample } from './basic-example';
+import * as basicExample from './basic-example';
 
-basicExample();
+basicExample.default();

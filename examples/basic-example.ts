@@ -1,7 +1,7 @@
 import { ExprOp, WorkflowConfig, WorkflowEvent, WorkflowFunctionInput, WorkflowType } from "../src/types";
 import { Rootsby } from "../src/workflow";
 
-export function basicExample() {
+export default function() {
   const id1 = crypto.randomUUID();
   const id2 = crypto.randomUUID();
 
