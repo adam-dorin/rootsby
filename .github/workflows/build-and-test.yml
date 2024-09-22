@@ -21,7 +21,9 @@ jobs:
       - run: npm version patch --git-tag-version false
       - run: cat package.json > ./dist/package.json
       - run: cat README.md > ./dist/README.md
+      - run: npm whoami && ls -la
       - run: cd dist
+      - run: npm whoami && ls -la
       - run: npm publish
       - run: cd ..
       - run: PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
