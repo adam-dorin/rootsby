@@ -22,6 +22,8 @@ jobs:
         run: npm ci    
       - name: Run tests
         run: npm test
+      - name: Run examples
+        run: npm run examples
       - name: Build package
         run: npm run build
       - name: Configure deploy package
