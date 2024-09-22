@@ -28,6 +28,7 @@ jobs:
         with:
           node-version: 20
           registry-url: https://registry.npmjs.org/
+      - run: npm run build
       - run: npm version patch --git-tag-version false
       - run: cat package.json > ./dist/package.json
       - run: cat README.md > ./dist/README.md
