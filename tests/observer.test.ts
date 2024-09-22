@@ -22,4 +22,29 @@ describe('Observer tests', () => {
         observer.unsubscribeAll('test-push-sub');
         sub.unsubscribe();
     })
+
+    test('pushing should trigger logger function', done => {
+        observer.setLogger((name, data) => {
+            expect(name).toBe('test-push-sub');
+            expect(data).toBe(true);
+            done();
+        });
+        const sub = observer.subscribe('test-push-sub', value => {
+            expect(value).toBe(true);  
+        });
+        observer.push('test-push-sub', true);
+        observer.unsubscribeAll('test-push-sub');
+        sub.unsubscribe();
+    })
+
+    test('cache should work as expected', done => {
+        const obs = new Observable<boolean>(true);
+        obs.push('test-cache', true);
+        const sub = obs.subscribe('test-cache', value => {
+            expect(value).toBe(true);
+            done();
+        });
+        sub.unsubscribe();
+        obs.unsubscribeAll('test-cache');
+    })
 })
