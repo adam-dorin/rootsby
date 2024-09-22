@@ -3,7 +3,7 @@ describe('workflow-utils tests', () => {
 
     beforeEach(() => {
         // observer = new Observable<boolean>();
-        console.log('before each');
+        // console.log('before each');
     });
 
 

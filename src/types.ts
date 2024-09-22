@@ -46,7 +46,7 @@ export type WorkflowFunctionsValidationResult = {
 };
 
 export type WorkflowConfigInput = { name?: string; type?: WorkflowType; description?: string; functions?: WorkflowFunction[] };
-export type WorkflowFunctionConfigInput = { name?: string; description?: string; file: string; middleware?: string[]; next?: WorkflowNextFunction[] };
+export type WorkflowFunctionConfigInput = { name?: string; description?: string; file?: string; middleware?: string[]; next?: WorkflowNextFunction[], executor?: (data: WorkflowFunctionInput) => unknown };
 
 export enum WorkflowEvent {
   startWorkflow = "startWorkflow",

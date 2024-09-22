@@ -1,15 +1,6 @@
-import { v4 as uuidv4 } from 'uuid';
 import {
-  ExprOp,
   ExprOperators,
   PrimitiveExpression,
-  WorkflowCondition,
-  WorkflowConfig,
-  WorkflowConfigInput,
-  WorkflowFunction,
-  WorkflowFunctionConfigInput,
-  WorkflowNextFunction,
-  WorkflowType,
 } from "./types";
 
 type EngineSignature = { [name in ExprOperators]: (first: PrimitiveExpression, second: PrimitiveExpression) => boolean };
@@ -56,46 +47,5 @@ export class WorkflowUtils {
 
   public static extractProperty(obj: Record<string, unknown>, extractor: string | string[], delimiter = "."): unknown {
     return ExpressionParser.extractProperty(obj, extractor, delimiter);
-  }
-
-  public static createWorkflowConfig({ name, type, description, functions }: WorkflowConfigInput): WorkflowConfig {
-    const id = uuidv4();
-    const config: WorkflowConfig = {
-      id: id,
-      name: name || id,
-      type: type || WorkflowType.ShortRunning,
-      description: description || "",
-      functions: functions || [],
-    };
-    return config;
-  }
-
-  public static createFunctionConfig({ name, description, file, middleware, next }: WorkflowFunctionConfigInput): WorkflowFunction {
-    const id = uuidv4();
-    const func: WorkflowFunction = {
-      id: id,
-      name: name || id,
-      description: description || "",
-      file: file,
-      middleware: middleware,
-      next: next || [],
-    };
-    return func;
-  }
-
-  public static createNextFunctionConfig({ functionId, values }: WorkflowNextFunction): WorkflowNextFunction {
-    const nextFunc: WorkflowNextFunction = {
-      functionId: functionId,
-      values: values || [],
-    };
-    return nextFunc;
-  }
-
-  public static createNextConditionConfig({ operator, value }: { operator: ExprOperators; value: PrimitiveExpression }): WorkflowCondition {
-    const condition: WorkflowCondition = {
-      operator: operator,
-      value: value,
-    };
-    return condition;
   }
 }
