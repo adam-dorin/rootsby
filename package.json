@@ -1,7 +1,7 @@
 {
   "name": "rootsby",
   "description": "A simple, lightweight, and fast workflow engine for NodeJS.",
-  "version": "0.1.12",
+  "version": "0.1.14",
   "main": "workflow.js",
   "scripts": {
     "examples": "npx ts-node examples/index.ts",
