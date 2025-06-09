@@ -142,4 +142,11 @@ describe('workflow-utils', () => {
         expect(result).toBe("value");
     });
 
+    test('utils extractProperty should throw when extractor is invalid', () => {
+        const obj = { prop: { nested: { deeply: "value" } } };
+        expect(() => {
+            WorkflowUtils.extractProperty(obj, 'prop.invalid.deep');
+        }).toThrow('Invalid extractor invalid');
+    });
+
 })

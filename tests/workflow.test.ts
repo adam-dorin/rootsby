@@ -224,8 +224,101 @@ describe("Workflows", () => {
     });
     workflow.runWorkflow(shortRunning, { currentStepData: "test-value-to-evaluate" });
   });
-  // TODO: Add more tests for
-  // - metadata in middleware functions
-  // - metadata in functions
-  // - error handling
+
+  test("middleware should receive metadata and emit events", (done) => {
+    const fn = WorkflowTestUtils.createFunctionConfig({
+      name: "meta-fn",
+      middleware: ["logger"],
+    });
+    shortRunning.functions = [fn];
+
+    const middlewareExecutor = jest.fn((input) => {
+      expect(input.metadata).toEqual({ level: "debug" });
+      return input.data;
+    });
+
+    const workflow = new Rootsby({
+      middlewareFunctions: [
+        {
+          name: "logger",
+          metadata: { level: "debug" },
+          executor: middlewareExecutor,
+        },
+      ],
+    });
+
+    const events: WorkflowEvent[] = [];
+    workflow.progress({
+      events: [WorkflowEvent.beforeMiddleware, WorkflowEvent.afterMiddleware, WorkflowEvent.endWorkflow],
+      handler: (eventName: WorkflowEvent) => {
+        events.push(eventName);
+        if (eventName === WorkflowEvent.endWorkflow) {
+          expect(middlewareExecutor).toHaveBeenCalled();
+          expect(events).toContain(WorkflowEvent.beforeMiddleware);
+          expect(events).toContain(WorkflowEvent.afterMiddleware);
+          done();
+        }
+      },
+    });
+
+    workflow.runWorkflow(shortRunning);
+  });
+
+  test("function executor should receive metadata", (done) => {
+    const fn = WorkflowTestUtils.createFunctionConfig({
+      name: "meta-fn",
+      executor: (input) => {
+        expect(input.metadata).toEqual({ info: true });
+        return "ok";
+      },
+      description: "", // filler
+    });
+    fn.metadata = { info: true };
+    shortRunning.functions = [fn];
+
+    const workflow = new Rootsby();
+    workflow.progress({
+      events: [WorkflowEvent.endWorkflow],
+      handler: (eventName: WorkflowEvent, event: any) => {
+        expect(eventName).toBe(WorkflowEvent.endWorkflow);
+        expect(event.data).toBe("ok");
+        done();
+      },
+    });
+    workflow.runWorkflow(shortRunning);
+  });
+
+  test("should emit error event when non primitive result returned", (done) => {
+    const fn = WorkflowTestUtils.createFunctionConfig({
+      name: "err-fn",
+      executor: () => ({ obj: true }),
+    });
+    shortRunning.functions = [fn];
+
+    const workflow = new Rootsby();
+    workflow.progress({
+      events: [WorkflowEvent.error],
+      handler: (eventName: WorkflowEvent, event: any) => {
+        expect(eventName).toBe(WorkflowEvent.error);
+        expect(event.functionId).toBe(fn.id);
+        expect(event.error).toBe("Invalid result type");
+        done();
+      },
+    });
+    workflow.runWorkflow(shortRunning);
+  });
+
+  test("runWorkflow should reject when file has no default export", async () => {
+    const fn = WorkflowTestUtils.createFunctionConfig({
+      name: "bad-fn",
+      file: path.resolve("./tests/bad-executor.ts"),
+    });
+    shortRunning.functions = [fn];
+
+    const workflow = new Rootsby();
+    await expect(workflow.runWorkflow(shortRunning)).rejects.toEqual({
+      content: "File content not found or not exported as default",
+    });
+  });
+  // Additional tests added above cover metadata and error handling
 });
