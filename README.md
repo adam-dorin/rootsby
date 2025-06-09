@@ -5,6 +5,7 @@ The package supports event-driven execution, making it easy to integrate with ex
 
 ```typescript
 // Example of how to use the library
+import * as crypto from "crypto";
 import { Rootsby } from "rootsby/workflow";
 import { 
     WorkflowConfig, 

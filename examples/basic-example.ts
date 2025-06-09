@@ -1,3 +1,4 @@
+import * as crypto from "crypto";
 import { ExprOp, WorkflowConfig, WorkflowEvent, WorkflowFunctionInput, WorkflowType } from "../src/types";
 import { Rootsby } from "../src/workflow";
 
