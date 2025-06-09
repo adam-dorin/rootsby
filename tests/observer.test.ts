@@ -56,4 +56,28 @@ describe('Observer tests', () => {
         observer.push('test-unsubscribe', true);
         setTimeout(() => done(), 20);
     })
+
+    test('unsubscribe should only remove the intended observer', done => {
+        const calls: boolean[] = [];
+        const sub1 = observer.subscribe('multi', () => calls.push(true));
+        const sub2 = observer.subscribe('multi', () => {
+            calls.push(false);
+            if (calls.length === 1) {
+                expect(calls).toEqual([false]);
+                done();
+            }
+        });
+        sub1.unsubscribe();
+        observer.push('multi', true);
+    })
+
+    test('unsubscribeAll should clear cached data when caching', () => {
+        const obs = new Observable<boolean>(true);
+        obs.push('cache-test', true);
+        obs.unsubscribeAll('cache-test');
+        const sub = obs.subscribe('cache-test', () => {
+            throw new Error('Should not receive cached value after unsubscribeAll');
+        });
+        sub.unsubscribe();
+    })
 })
