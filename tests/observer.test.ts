@@ -47,4 +47,13 @@ describe('Observer tests', () => {
         sub.unsubscribe();
         obs.unsubscribeAll('test-cache');
     })
+
+    test('unsubscribe should stop receiving updates', done => {
+        const sub = observer.subscribe('test-unsubscribe', value => {
+            done(new Error('Should not receive updates after unsubscribe'));
+        });
+        sub.unsubscribe();
+        observer.push('test-unsubscribe', true);
+        setTimeout(() => done(), 20);
+    })
 })
