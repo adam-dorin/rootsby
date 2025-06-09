@@ -32,7 +32,7 @@ export class Observable<DataType> {
    */
   private unsubscribe(index: number): void {
     // TODO: still need to add tests for this
-    this.observers = this.observers.filter((_, ObsIndex: number) => ObsIndex === index);
+    this.observers = this.observers.filter((_, ObsIndex: number) => ObsIndex !== index);
   }
 
   /**
